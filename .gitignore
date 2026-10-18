@@ -1,0 +1,20 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Collected evidence
+backend/data/
+
+# Agent runtime files
+agent/agent-state.json
+agent/pending-batch.json
+agent/sample.log
+
+# macOS
+.DS_Store

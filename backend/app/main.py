@@ -1,0 +1,136 @@
+
+import hashlib
+import json
+import os
+import secrets
+from datetime import datetime, timezone
+from pathlib import Path
+from uuid import UUID
+
+from fastapi import FastAPI, Header, HTTPException, Request
+from pydantic import BaseModel, Field, ValidationError
+
+app = FastAPI(
+    title="The Missing Links API",
+    version="0.1.0",
+    description="Incident timeline and evidence collection"
+)
+
+EVIDENCE_DIR = Path("data/evidence")
+MAX_BATCH_BYTES = 1024 * 1024  # 1 MiB
+MAX_LOG_LINES = 1000
+
+
+class LogBatch(BaseModel):
+    device_id: str = Field(pattern=r"^[a-zA-Z0-9_-]{1,64}$")
+    batch_id: UUID
+    log_type: str = Field(pattern=r"^[a-zA-Z0-9_-]{1,32}$")
+    lines: list[str] = Field(min_length=1, max_length=MAX_LOG_LINES)
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "the-missing-links"
+    }
+
+
+@app.post("/api/v1/ingest", status_code=201)
+async def ingest_logs(
+    request: Request,
+    x_api_key: str | None = Header(default=None)
+):
+    expected_key = os.getenv("AGENT_API_KEY")
+
+    if not expected_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Agent authentication is not configured"
+        )
+
+    if not x_api_key or not secrets.compare_digest(
+        x_api_key, expected_key
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid API key"
+        )
+
+    # Read with an explicit size limit.
+    chunks = []
+    total = 0
+
+    async for chunk in request.stream():
+        total += len(chunk)
+
+        if total > MAX_BATCH_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail="Batch exceeds 1 MiB"
+            )
+
+        chunks.append(chunk)
+
+    raw_bytes = b"".join(chunks)
+
+    try:
+        payload = LogBatch.model_validate_json(raw_bytes)
+    except (ValidationError, ValueError):
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid log batch"
+        )
+
+    sha256 = hashlib.sha256(raw_bytes).hexdigest()
+
+    # One directory per registered source.
+    device_dir = EVIDENCE_DIR / payload.device_id
+    device_dir.mkdir(parents=True, exist_ok=True)
+
+    batch_name = str(payload.batch_id)
+    evidence_path = device_dir / f"{batch_name}.json"
+    metadata_path = device_dir / f"{batch_name}.meta.json"
+
+    # Exclusive creation prevents overwriting existing evidence.
+    try:
+        with evidence_path.open("xb") as file:
+            file.write(raw_bytes)
+            file.flush()
+            os.fsync(file.fileno())
+    except FileExistsError:
+        existing_hash = hashlib.sha256(
+            evidence_path.read_bytes()
+        ).hexdigest()
+
+        if existing_hash != sha256:
+            raise HTTPException(
+                status_code=409,
+                detail="Batch ID already exists with different content"
+            )
+
+        return {
+            "status": "duplicate",
+            "batch_id": batch_name,
+            "sha256": sha256
+        }
+
+    metadata = {
+        "device_id": payload.device_id,
+        "batch_id": batch_name,
+        "log_type": payload.log_type,
+        "line_count": len(payload.lines),
+        "sha256": sha256,
+        "received_at": datetime.now(timezone.utc).isoformat(),
+        "evidence_file": evidence_path.name
+    }
+
+    with metadata_path.open("x", encoding="utf-8") as file:
+        json.dump(metadata, file, indent=2)
+        file.flush()
+        os.fsync(file.fileno())
+
+    return {
+        "status": "accepted",
+        **metadata
+    }
