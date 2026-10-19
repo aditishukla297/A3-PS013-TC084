@@ -137,7 +137,12 @@ async def ingest_logs(
     }
 
 @app.get("/api/v1/timeline")
-def get_timeline():
+def get_timeline(
+    severity: str | None = None,
+    device_id: str | None = None,
+    event_type: str | None = None,
+    username: str | None = None,
+):
     events = []
 
     if not EVIDENCE_DIR.exists():
@@ -165,13 +170,25 @@ def get_timeline():
         except (OSError, ValueError, KeyError, TypeError):
             continue
 
+    
     events.sort(key=lambda event: (
         event["timestamp"] is None,
         event["timestamp"] or ""
     ))
 
+    if severity:
+        events = [e for e in events if e["severity"] == severity]
+
+    if device_id:
+        events = [e for e in events if e["device_id"] == device_id]
+
+    if event_type:
+        events = [e for e in events if e["event_type"] == event_type]
+
+    if username:
+        events = [e for e in events if e["username"] == username]
+
     return {
         "total": len(events),
         "events": events
     }
-
