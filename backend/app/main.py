@@ -6,6 +6,7 @@ import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID
+from app.parser import parse_log
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from pydantic import BaseModel, Field, ValidationError
@@ -134,3 +135,43 @@ async def ingest_logs(
         "status": "accepted",
         **metadata
     }
+
+@app.get("/api/v1/timeline")
+def get_timeline():
+    events = []
+
+    if not EVIDENCE_DIR.exists():
+        return {"total": 0, "events": []}
+
+    for evidence_path in EVIDENCE_DIR.glob("*/*.json"):
+        if evidence_path.name.endswith(".meta.json"):
+            continue
+
+        try:
+            with evidence_path.open("r", encoding="utf-8") as file:
+                batch = json.load(file)
+
+            for line_number, line in enumerate(batch["lines"], start=1):
+                event = parse_log(
+                    line=line,
+                    device_id=batch["device_id"],
+                    batch_id=batch["batch_id"],
+                    log_type=batch["log_type"],
+                )
+
+                event["line_number"] = line_number
+                events.append(event)
+
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+
+    events.sort(key=lambda event: (
+        event["timestamp"] is None,
+        event["timestamp"] or ""
+    ))
+
+    return {
+        "total": len(events),
+        "events": events
+    }
+
