@@ -1,3 +1,4 @@
+// TRACEPOINT_EVIDENCE_PHASE4
 
 import { useEffect, useState } from "react";
 import {
@@ -146,8 +147,18 @@ export default function EvidenceLibrary({ refreshSignal = 0 }) {
   }
 
   return (
-    <div className="tp-ev">
-      <div className="tp-ev-stats">
+    <div className="tp-ev tp-evidence-console">
+      <section className="tp-evidence-banner">
+        <div><span className="tp-evidence-eyebrow">EVIDENCE / COLLECTION REGISTER</span>
+          <h2>Collected evidence, accounted for.</h2>
+          <p>Review collection metadata, verify SHA-256 fingerprints and inspect trust assessments.</p>
+        </div>
+        <div className="tp-evidence-banner-side"><span>COLLECTION REGISTER</span>
+          <strong>{loading ? 'Loading…' : `${batches.length} batches`}</strong>
+          <small>Integrity checks run on demand</small>
+        </div>
+      </section>
+      <div className="tp-ev-stats tp-evidence-stats">
         <div className="tp-card tp-ev-stat">
           <span>Evidence batches</span>
           <strong>{batches.length}</strong>
@@ -165,11 +176,11 @@ export default function EvidenceLibrary({ refreshSignal = 0 }) {
         </div>
       </div>
 
-      <section className="tp-card tp-ev-card">
+      <section className="tp-card tp-ev-card tp-evidence-register">
         <div className="tp-card-head">
           <div>
-            <h2>Evidence library</h2>
-            <p>Stored collection batches and integrity records</p>
+            <h2>Collection register</h2>
+            <p>Stored batches, source devices and verification results</p>
           </div>
         </div>
 
@@ -195,7 +206,7 @@ export default function EvidenceLibrary({ refreshSignal = 0 }) {
           <div className="tp-ev-empty">No matching evidence batches found.</div>
         ) : (
           <div className="tp-ev-table-wrap">
-            <table className="tp-ev-table">
+            <table className="tp-ev-table tp-evidence-table">
               <thead>
                 <tr>
                   <th>Evidence batch</th>
@@ -215,7 +226,7 @@ export default function EvidenceLibrary({ refreshSignal = 0 }) {
                     <tr key={key}>
                       <td>
                         <button
-                          className="tp-ev-batch-link"
+                          className="tp-ev-batch-link tp-evidence-batch"
                           onClick={() => setSelected(batch)}
                         >
                           <Fingerprint size={17} />
@@ -225,9 +236,9 @@ export default function EvidenceLibrary({ refreshSignal = 0 }) {
                           </span>
                         </button>
                       </td>
-                      <td>{batch.device_id}</td>
+                      <td className="tp-evidence-device">{batch.device_id}</td>
                       <td>{batch.line_count}</td>
-                      <td>{formatDate(batch.received_at)}</td>
+                      <td className="tp-evidence-date">{formatDate(batch.received_at)}</td>
                       <td>{statusFor(batch)}</td>
                     <td><TrustScoreBadge result={scores[key]} /></td>
                       <td>

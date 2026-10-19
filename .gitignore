@@ -18,3 +18,5 @@ agent/sample.log
 
 # macOS
 .DS_Store
+# Local UI backups
+*.pre-dashboard-polish-*

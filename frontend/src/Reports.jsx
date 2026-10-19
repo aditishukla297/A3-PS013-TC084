@@ -1,7 +1,8 @@
+// TRACEPOINT_REPORTS_PHASE6
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowDownToLine, FileText, Search,
+  ArrowDownToLine, FileText, Search, RefreshCw,
   ShieldCheck, AlertCircle
 } from 'lucide-react';
 import './Reports.css';
@@ -61,17 +62,19 @@ export default function Reports({ onExportCsv }) {
   };
 
   return (
-    <div className="tr-reports">
-      <div className="tr-reports-intro">
+    <div className="tr-reports tr-reports-phase6">
+      <div className="tr-reports-intro tr-report-hero">
         <div>
-          <h2>Investigation Reports</h2>
+          <span className="tr-report-eyebrow"><FileText size={14} /> FORENSIC REPORTING / CASE ARCHIVE</span>
+          <h2>Investigation reports, ready for review.</h2>
           <p>
             Generate forensic investigation reports and
             export collected timeline events.
           </p>
         </div>
 
-      </div>
+      <div className="tr-report-hero-aside"><span>CASE REPORTS</span><strong>{loading ? "Loading…" : `${cases.length} available`}</strong><small>PDF reports generated on request</small></div>
+    </div>
 
       <div className="tr-report-stats">
         <div className="tr-report-stat">
@@ -98,17 +101,18 @@ export default function Reports({ onExportCsv }) {
       </div>
 
       <div className="tr-report-panel">
+      <div className="tr-report-panel-heading"><div><h3>Case report register</h3><p>{filtered.length} of {cases.length} investigations</p></div><button type="button" className="tp-button tr-report-refresh" onClick={loadReports} disabled={loading}><RefreshCw size={15} className={loading ? "tp-spin" : ""} /> Refresh</button></div>
         <div className="tr-report-toolbar">
           <div className="tr-report-search">
             <Search size={17} />
-            <input
+            <input aria-label="Search investigation reports"
               placeholder="Search case ID or title..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
 
-          <select
+          <select aria-label="Filter reports by status"
             value={status}
             onChange={e => setStatus(e.target.value)}
           >
@@ -128,9 +132,9 @@ export default function Reports({ onExportCsv }) {
             No investigations found.
           </div>
         ) : (
-          <div className="tr-report-list">
+          <div className="tr-report-list" role="list" aria-label="Investigation reports">
             {filtered.map(item => (
-              <div className="tr-report-row" key={item.id}>
+              <div className="tr-report-row" role="listitem" key={item.id}>
                 <div className="tr-report-case">
                   <span className="tr-report-id">
                     TP-{String(item.id).padStart(4, '0')}
@@ -170,14 +174,14 @@ export default function Reports({ onExportCsv }) {
 
       <div className="tr-report-export">
         <div>
-          <h3>Timeline CSV Export</h3>
+          <h3>Timeline CSV export</h3>
           <p>
             Export collected timeline events for offline analysis.
             CSV exports are not signed forensic reports.
           </p>
         </div>
 
-        <button className="tp-button" onClick={onExportCsv}>
+        <button className="tp-button" onClick={onExportCsv} disabled={typeof onExportCsv !== "function"}>
           <ArrowDownToLine size={16} />
           Download CSV
         </button>

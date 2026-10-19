@@ -69,7 +69,15 @@ export default function Investigations({ events = [] }) {
   const linked = new Set((active?.events || []).map(e => e.event_reference));
   const available = events.map((e, index) => ({ e, index })).filter(({ e }) => !linked.has(eventRef(e)));
 
-  return <div className="tp-inv">
+  return <div className="tp-inv tp-inv-phase5">
+    <div className="tp-inv-phase5-hero">
+      <div>
+        <span className="tp-inv-phase5-eyebrow"><ShieldAlert size={15}/> CASE MANAGEMENT / INVESTIGATIONS</span>
+        <h2>Turn evidence into an investigation.</h2>
+        <p>Organize security leads, link collected events, and document analyst findings with a clear case history.</p>
+      </div>
+      <span className="tp-inv-phase5-hero-count">{counts.total} {counts.total === 1 ? 'CASE' : 'CASES'} IN REGISTER</span>
+    </div>
     <div className="tp-inv-metrics">
       {[['Total cases', counts.total], ['Open', counts.open], ['Investigating', counts.investigating], ['Resolved', counts.resolved]].map(([label, value]) =>
         <div className="tp-card tp-inv-metric" key={label}><span>{label}</span><strong>{value}</strong></div>
@@ -77,15 +85,15 @@ export default function Investigations({ events = [] }) {
     </div>
 
     {error && <div className="tp-error" role="alert">{error}</div>}
-    <section className="tp-card tp-inv-card">
+    <section className="tp-card tp-inv-card tp-inv-phase5-register">
       <div className="tp-card-head"><div><h2>Investigation cases</h2><p>Track incidents, evidence links, and analyst findings</p></div>
         <div className="tp-inv-head-actions"><button className="tp-button" onClick={loadCases} disabled={loading}><RefreshCw size={15}/> Refresh</button><button className="tp-button primary" onClick={() => setCreating(true)}><Plus size={16}/> New investigation</button></div>
       </div>
       <div className="tp-toolbar"><label className="tp-search"><Search size={18}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search investigations" aria-label="Search investigations"/></label></div>
       {loading ? <div className="tp-inv-empty">Loading investigations…</div> : visible.length === 0 ?
         <div className="tp-inv-empty"><ShieldAlert size={25}/><strong>{cases.length ? 'No matching cases' : 'No investigations yet'}</strong><p>{cases.length ? 'Try another search.' : 'Create your first case to begin documenting an incident.'}</p></div> :
-        <div className="tp-ev-table-wrap"><table className="tp-ev-table"><thead><tr><th>Case</th><th>Severity</th><th>Status</th><th>Events</th><th>Updated</th></tr></thead><tbody>
-          {visible.map(c => <tr key={c.id} className="tp-inv-clickable" onClick={() => openCase(c.id)}><td><strong className="tp-inv-case">TP-{String(c.id).padStart(4, '0')}</strong><div className="tp-inv-title">{c.title}</div></td><td><span className={`tp-inv-pill ${c.severity}`}>{c.severity}</span></td><td><span className={`tp-inv-pill ${c.status}`}>{c.status}</span></td><td>{c.event_count}</td><td>{stamp(c.updated_at)}</td></tr>)}
+        <div className="tp-ev-table-wrap"><table className="tp-ev-table tp-inv-phase5-table"><thead><tr><th>Case</th><th>Severity</th><th>Status</th><th>Events</th><th>Updated</th></tr></thead><tbody>
+          {visible.map(c => <tr key={c.id} className="tp-inv-clickable" tabIndex={0} role="button" onClick={() => openCase(c.id)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCase(c.id); } }}><td><strong className="tp-inv-case">TP-{String(c.id).padStart(4, '0')}</strong><div className="tp-inv-title">{c.title}</div></td><td><span className={`tp-inv-pill ${c.severity}`}>{c.severity}</span></td><td><span className={`tp-inv-pill ${c.status}`}>{c.status}</span></td><td>{c.event_count}</td><td>{stamp(c.updated_at)}</td></tr>)}
         </tbody></table></div>}
     </section>
 
@@ -107,6 +115,7 @@ export default function Investigations({ events = [] }) {
         <label className="tp-inv-status-label">Case status<select disabled={busy} value={active.status} onChange={e => perform(() => request(`${API}/${active.id}`, { method: 'PATCH', body: JSON.stringify({ status: e.target.value }) }))}>{['open', 'investigating', 'resolved'].map(s => <option value={s} key={s}>{s}</option>)}</select></label>
         <button
           type="button"
+          className="tp-button tp-inv-phase5-report"
           onClick={() => {
             window.open(
               `/api/v1/investigations/${active.id}/report`,
@@ -114,7 +123,7 @@ export default function Investigations({ events = [] }) {
             );
           }}
         >
-          Download PDF Report
+          <FileText size={16}/> Download PDF report
         </button>
         <h3><Link2 size={16}/> Linked events ({active.events?.length || 0})</h3>
         {(active.events || []).map(link => <div className="tp-inv-linked" key={link.id}><FileText size={15}/><span>{(() => { try { return eventLabel(JSON.parse(link.event_reference)); } catch { return link.event_reference; } })()}</span></div>)}

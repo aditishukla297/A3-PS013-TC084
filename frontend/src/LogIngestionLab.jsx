@@ -32,7 +32,7 @@ export default function LogIngestionLab({ onIngested, onViewTimeline }) {
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }
-  return <div className="lab-root">
+  return <div className="lab-root lab-phase7">
     <div className="lab-banner"><FileCode2 size={20}/><div><strong>Log Ingestion Lab</strong><p>Submit labeled sample logs through the real ingestion pipeline. Demo data is stored separately from existing device evidence.</p></div></div>
     <div className="lab-grid">
       <section className="tp-card lab-card"><h2>1. Raw log source</h2><p>Choose a sample scenario to inspect before ingestion.</p>
