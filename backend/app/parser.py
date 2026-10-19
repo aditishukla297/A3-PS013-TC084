@@ -1,8 +1,17 @@
 
 import re
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-def parse_log(line, device_id, batch_id, log_type):
+
+def parse_log(
+    line,
+    device_id,
+    batch_id,
+    log_type,
+    received_at=None,
+    source_timezone="Asia/Kolkata",
+):
     """Convert one raw log line into a structured event."""
 
     event = {
@@ -11,21 +20,65 @@ def parse_log(line, device_id, batch_id, log_type):
         "log_type": log_type,
         "raw_log": line,
         "timestamp": None,
+        "timestamp_inferred": False,
+        "timestamp_source": "unknown",
+        "source_timezone": source_timezone,
+        "received_at": received_at,
         "event_type": "unknown",
         "severity": "info",
         "username": None,
     }
 
-    # Example: Oct 19 10:15:20
+    # Traditional Linux syslog timestamp, e.g. Oct 19 10:15:20
+    # This format does not contain a year or timezone.
     match = re.match(
         r"^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})",
         line,
     )
 
-    if match:
-        event["timestamp"] = match.group(1)
+    if match and received_at:
+        try:
+            # Convert the evidence receipt time into a datetime.
+            received = datetime.fromisoformat(
+                received_at.replace("Z", "+00:00")
+            )
 
-    # Identify authentication events
+            if received.tzinfo is None:
+                raise ValueError("Missing receipt timezone")
+
+            # Convert receipt time to the source machine's timezone.
+            local_tz = ZoneInfo(source_timezone)
+            received_local = received.astimezone(local_tz)
+
+            # Parse the month, day, and time from the log.
+            parsed = datetime.strptime(
+                match.group(1),
+                "%b %d %H:%M:%S",
+            )
+
+            # Infer the year using the evidence receipt date.
+            event_time = parsed.replace(
+                year=received_local.year,
+                tzinfo=local_tz,
+            )
+
+            # If the inferred event is in the future,
+            # assume it belongs to the previous year.
+            if event_time > received_local:
+                event_time = event_time.replace(
+                    year=event_time.year - 1
+                )
+
+            # Store a timezone-aware ISO 8601 timestamp.
+            event["timestamp"] = event_time.isoformat()
+            event["timestamp_inferred"] = True
+            event["timestamp_source"] = "syslog_inferred"
+
+        except (ValueError, OverflowError):
+            # Keep timestamp as None if parsing fails.
+            pass
+
+    # Identify authentication events.
     if "Failed password" in line:
         event["event_type"] = "failed_login"
         event["severity"] = "warning"
@@ -42,7 +95,7 @@ def parse_log(line, device_id, batch_id, log_type):
         event["event_type"] = "authentication_failure"
         event["severity"] = "warning"
 
-    # Extract username from common SSH messages
+    # Extract usernames from common SSH authentication messages.
     username_match = re.search(
         r"(?:for|user)\s+(?:invalid user\s+)?([a-zA-Z0-9_.-]+)",
         line,

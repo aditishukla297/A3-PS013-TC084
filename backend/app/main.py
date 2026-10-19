@@ -17,7 +17,7 @@ app = FastAPI(
     description="Incident timeline and evidence collection"
 )
 
-EVIDENCE_DIR = Path("data/evidence")
+EVIDENCE_DIR = Path(__file__).resolve().parent.parent / "data" / "evidence"
 MAX_BATCH_BYTES = 1024 * 1024  # 1 MiB
 MAX_LOG_LINES = 1000
 
@@ -156,25 +156,43 @@ def get_timeline(
             with evidence_path.open("r", encoding="utf-8") as file:
                 batch = json.load(file)
 
+            metadata_path = evidence_path.with_name(
+                evidence_path.stem + ".meta.json"
+            )
+
+            received_at = None
+            if metadata_path.exists():
+                metadata = json.loads(metadata_path.read_text())
+                received_at = metadata.get("received_at")
+
             for line_number, line in enumerate(batch["lines"], start=1):
                 event = parse_log(
                     line=line,
                     device_id=batch["device_id"],
                     batch_id=batch["batch_id"],
                     log_type=batch["log_type"],
+                    received_at=received_at,
+                    source_timezone="Asia/Kolkata",
                 )
 
                 event["line_number"] = line_number
                 events.append(event)
 
-        except (OSError, ValueError, KeyError, TypeError):
+        except Exception as error:
+            print(f"ERROR reading {evidence_path}: {type(error).__name__}: {error}")
             continue
 
     
+    
     events.sort(key=lambda event: (
         event["timestamp"] is None,
-        event["timestamp"] or ""
+        datetime.fromisoformat(event["timestamp"]).astimezone(
+            timezone.utc
+        ) if event["timestamp"] else datetime.max.replace(
+            tzinfo=timezone.utc
+        )
     ))
+
 
     if severity:
         events = [e for e in events if e["severity"] == severity]
