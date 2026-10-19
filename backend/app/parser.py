@@ -21,6 +21,7 @@ def parse_log(
         "raw_log": line,
         "timestamp": None,
         "timestamp_inferred": False,
+        "timestamp_conflict": False,  # ADD THIS LINE
         "timestamp_source": "unknown",
         "source_timezone": source_timezone,
         "received_at": received_at,
@@ -64,10 +65,20 @@ def parse_log(
 
             # If the inferred event is in the future,
             # assume it belongs to the previous year.
-            if event_time > received_local:
+                        # Only infer the previous year around New Year.
+            if (
+                received_local.month == 1
+                and event_time.month == 12
+                and event_time > received_local
+            ):
                 event_time = event_time.replace(
                     year=event_time.year - 1
                 )
+
+            # Flag timestamps that appear to be in the future.
+            event["timestamp_conflict"] = (
+                event_time > received_local
+            )
 
             # Store a timezone-aware ISO 8601 timestamp.
             event["timestamp"] = event_time.isoformat()
