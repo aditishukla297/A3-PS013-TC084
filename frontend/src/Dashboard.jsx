@@ -5,7 +5,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '.
 // TRACEPOINT_SHADCN_PHASE1
 import { Card } from './components/ui/card';
 import InvestigationGraph from './InvestigationGraph';
-import Reports from './reports';
+import Reports from './Reports';
 import Investigations from './Investigations';
 import EvidenceLibrary from "./EvidenceLibrary";
 import LogIngestionLab from './LogIngestionLab';
