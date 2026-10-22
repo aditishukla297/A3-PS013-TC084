@@ -164,3 +164,231 @@
   .tp-graph-phase5 .tp-graph-panel-head { flex-direction:column; align-items:flex-start; }
   .tp-graph-phase5 .tp-graph-sequence { display:flex; flex-wrap:wrap; }
 }
+
+/* TRACEPOINT_GRAPH_DARK_MODE_TARGETED_V2
+   Scoped to Investigation Graph only. Does not modify the light theme. */
+.tp-graph-root[data-theme="dark"] {
+  color: #e8edf6 !important;
+  color-scheme: dark;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-intro,
+.tp-graph-root[data-theme="dark"] .tp-graph-stats > .tp-card,
+.tp-graph-root[data-theme="dark"] .tp-graph-panel,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps {
+  background: #141c2a !important;
+  color: #e8edf6 !important;
+  border: 1px solid #354258 !important;
+  box-shadow: none !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-intro h2,
+.tp-graph-root[data-theme="dark"] .tp-graph-stats > .tp-card strong,
+.tp-graph-root[data-theme="dark"] .tp-graph-panel-head h3,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps h3,
+.tp-graph-root[data-theme="dark"] .tp-graph-node strong,
+.tp-graph-root[data-theme="dark"] .tp-graph-empty strong {
+  color: #f0f4fb !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-intro p,
+.tp-graph-root[data-theme="dark"] .tp-graph-panel-head p,
+.tp-graph-root[data-theme="dark"] .tp-graph-stats > .tp-card span,
+.tp-graph-root[data-theme="dark"] .tp-graph-node small,
+.tp-graph-root[data-theme="dark"] .tp-graph-node > span,
+.tp-graph-root[data-theme="dark"] .tp-graph-reason,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps > p,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps button small,
+.tp-graph-root[data-theme="dark"] .tp-graph-no-gaps,
+.tp-graph-root[data-theme="dark"] .tp-graph-caution,
+.tp-graph-root[data-theme="dark"] .tp-graph-empty p {
+  color: #b5c0d1 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-stats > .tp-card > svg,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps h3 > svg {
+  color: #b7a0ff !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-panel-head,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps button {
+  border-color: #354258 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-legend {
+  background: #202b3d !important;
+  color: #d5ddec !important;
+  border-color: #3b4960 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-legend i {
+  background: #b7a0ff !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-sequence {
+  border-color: #354258 !important;
+  background: #111927 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-node {
+  background: #202b3d !important;
+  color: #f0f4fb !important;
+  border-color: #43516a !important;
+  box-shadow: none !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-node.failure {
+  background: #38242c !important;
+  border-color: #70414b !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-node.success {
+  background: #19372e !important;
+  border-color: #326c53 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-node:hover {
+  filter: brightness(1.12);
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-edge {
+  color: #d4dced !important;
+  border-color: #43516a !important;
+  background: #1a2434 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-edge.tentative {
+  color: #e2d7ff !important;
+  border-color: #7964b8 !important;
+  background: #2a2342 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps button {
+  background: #1a2434 !important;
+  color: #e8edf6 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps button:hover {
+  background: #253149 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps button > span,
+.tp-graph-root[data-theme="dark"] .tp-graph-gaps button > svg {
+  color: #e8edf6 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-empty {
+  background: #111927 !important;
+  border-color: #354258 !important;
+  color: #e8edf6 !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-empty > svg {
+  color: #b7a0ff !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-graph-root .tp-button,
+.tp-graph-root[data-theme="dark"] .tp-button {
+  background: #202b3d !important;
+  color: #edf2fa !important;
+  border-color: #43516a !important;
+}
+.tp-graph-root[data-theme="dark"] .tp-button:hover {
+  background: #2a3850 !important;
+}
+
+/* The event-details drawer is rendered with a React portal under <body>,
+   so its theme attribute is set explicitly by InvestigationGraph.jsx. */
+.tp-graph-overlay[data-theme="dark"] {
+  background: rgba(0, 0, 0, .72) !important;
+  color: #e8edf6 !important;
+  color-scheme: dark;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-drawer {
+  background: #141c2a !important;
+  color: #e8edf6 !important;
+  border-left: 1px solid #354258 !important;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-header {
+  background: #182235 !important;
+  border-color: #354258 !important;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-header h2,
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-body h3,
+.tp-graph-overlay[data-theme="dark"] .tp-detail strong {
+  color: #f0f4fb !important;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-header span,
+.tp-graph-overlay[data-theme="dark"] .tp-detail span,
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-body p {
+  color: #b5c0d1 !important;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-header button {
+  color: #dce4f1 !important;
+  background: transparent !important;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-detail {
+  border-color: #354258 !important;
+  background: transparent !important;
+}
+.tp-graph-overlay[data-theme="dark"] .tp-drawer-body pre {
+  background: #0e1624 !important;
+  color: #dfe7f3 !important;
+  border: 1px solid #354258 !important;
+}
+
+
+
+/* TRACEPOINT_GRAPH_SEQUENCE_DARK_FIX_V1 */
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-phase5-panel,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps {
+  background: #141c2a !important;
+  color: #edf2fa !important;
+  border-color: #354258 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-panel-head h3,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps h3 {
+  color: #edf2fa !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-panel-head p,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps > p,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-empty p,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-caution {
+  color: #b5c0d1 !important;
+}
+
+/* Authentication sequence cards */
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node {
+  background: #1b2638 !important;
+  color: #edf2fa !important;
+  border: 1px solid #354258 !important;
+  box-shadow: none !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node.failure {
+  background: #38252d !important;
+  border-color: #75434d !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node.success {
+  background: #19362f !important;
+  border-color: #326b54 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node span,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node small {
+  color: #bdc8d8 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node strong {
+  color: #f1f5fb !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-node:hover {
+  filter: brightness(1.12);
+  border-color: #9b84e8 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-edge,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-reason,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-legend,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-empty {
+  color: #b5c0d1 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps button {
+  background: #1b2638 !important;
+  color: #e3eaf5 !important;
+  border-color: #354258 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps button:hover {
+  background: #263449 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps button span,
+.tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps button small {
+  color: #c2ccdc !important;
+}

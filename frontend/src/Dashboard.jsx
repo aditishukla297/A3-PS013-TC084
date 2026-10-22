@@ -4,14 +4,22 @@ import { Badge } from './components/ui/badge';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from './components/ui/table';
 // TRACEPOINT_SHADCN_PHASE1
 import { Card } from './components/ui/card';
-import InvestigationGraph from './InvestigationGraph';
-import Reports from './Reports';
-import Investigations from './Investigations';
-import EvidenceLibrary from "./EvidenceLibrary";
-import LogIngestionLab from './LogIngestionLab';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Wifi, WifiOff, Activity, ArrowDownToLine, ChevronRight, CircleHelp, Clock3, FileClock, FileText, Fingerprint, LayoutDashboard, LogOut, Menu, RefreshCw, Search, ShieldAlert, SlidersHorizontal, Terminal, X, GitBranch } from 'lucide-react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
+import { Wifi, WifiOff, Activity, ArrowDownToLine, ChevronRight, CircleHelp, Clock3, FileClock, FileText, Fingerprint, LayoutDashboard, LogOut, Menu, RefreshCw, Search, ShieldAlert, SlidersHorizontal, Terminal, X, GitBranch, Sun, Moon } from 'lucide-react';
 import './Tracepoint.css';
+
+const InvestigationGraph = lazy(() => import('./InvestigationGraph'));
+const Reports = lazy(() => import('./Reports'));
+const Investigations = lazy(() => import('./Investigations'));
+const EvidenceLibrary = lazy(() => import('./EvidenceLibrary'));
+const LogIngestionLab = lazy(() => import('./LogIngestionLab'));
 
 
 const navigation = [
@@ -131,6 +139,13 @@ export default function Dashboard({ user, onSignOut }) {
   const [level, setLevel] = useState('all');
   const [selected, setSelected] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    try { return window.localStorage.getItem('tracepoint.theme') === 'dark' ? 'dark' : 'light'; }
+    catch { return 'light'; }
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem('tracepoint.theme', theme); } catch { /* storage unavailable */ }
+  }, [theme]);
   const [evidenceRefresh, setEvidenceRefresh] = useState(0);
   // TRACEPOINT_NAV_V2_STATUS: real API health check, every 30 seconds.
   const [apiStatus, setApiStatus] = useState('checking');
@@ -179,7 +194,7 @@ export default function Dashboard({ user, onSignOut }) {
     setSelected(null);
     setMobileOpen(false);
   };
-  return <div className="tp-app">
+  return <div className="tp-app" data-theme={theme} data-page={page}>
     <aside className={`tp-sidebar ${mobileOpen ? 'tp-open' : ''}`}>
       <div className="tp-brand"><svg className="tp-brand-mark" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M8 9H17L26 18V27H17L8 18V9Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><path d="M8 18H17M17 9V18M17 18L26 27" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="8" cy="9" r="2.7" fill="currentColor"/><circle cx="17" cy="18" r="3" fill="currentColor"/><circle cx="26" cy="27" r="2.7" fill="currentColor"/></svg><span className="tp-brand-word">tracepoint<span>.</span></span></div>
       <div className="tp-workspace"><span className="tp-workspace-avatar">TP</span><div><strong>Security workspace</strong><small>Evidence & investigations</small></div></div>
@@ -194,17 +209,59 @@ export default function Dashboard({ user, onSignOut }) {
         <span className="tp-topbar-divider" aria-hidden="true"/>
         <div className="tp-topbar-account"><span className="tp-topbar-user">{user?.name || 'Account'}</span><small>Analyst workspace</small></div>
         <span className="tp-topbar-avatar">{(user?.name || 'U')[0].toUpperCase()}</span>
+        <button
+          type="button"
+          className="tp-nav-theme-toggle"
+          onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
       </div><div className="tp-profile"><span className="tp-profile-avatar">{(user?.name || 'U')[0].toUpperCase()}</span><div><strong>{user?.name || 'Account'}</strong><small>{user?.email || ''}</small></div></div><button className="tp-signout" onClick={onSignOut}><LogOut size={17}/> Sign out</button></div>
     </aside>
     <main className="tp-main">
     {/* TRACEPOINT_SINGLE_NAV_V1: status and account live in primary navigation */}
 
-      <div className="tp-content"><div className="tp-page-header"><div><h1>{title}</h1><p>{page === 'overview' ? 'Security activity and collected evidence across your workspace.' : page === 'timeline' ? 'Explore, filter and inspect security events.' : page === 'ingestion' ? 'Explore sample logs and follow them through the ingestion pipeline.' : page === 'evidence' ? 'Evidence collection and integrity records.' : page === 'graph' ? 'Explore evidence-linked authentication sequences.' : page === 'investigations' ? 'Review events and prepare incident investigations.' : 'Export collected security activity.'}</p></div><div className="tp-actions"><Button variant="outline" className="tp-button" onClick={() => {
-  if (page === 'evidence') {
-    setEvidenceRefresh(value => value + 1);
-  } else {
-    refresh();
-  }
+      <div className="tp-content"><div className="tp-page-header"><div><h1>{title}</h1><p>{page === 'overview' ? 'Security activity and collected evidence across your workspace.' : page === 'timeline' ? 'Explore, filter and inspect security events.' : page === 'ingestion' ? 'Explore sample logs and follow them through the ingestion pipeline.' : page === 'evidence' ? 'Evidence collection and integrity records.' : page === 'graph' ? 'Explore evidence-linked authentication sequences.' : page === 'investigations' ? 'Review events and prepare incident investigations.' : 'Export collected security activity.'}</p></div><div className="tp-actions">
+          <button type="button" className="tp-button tp-theme-toggle" onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} aria-pressed={theme === 'dark'} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+          </button>
+          <Button variant="outline" className="tp-button" onClick={() => {
+{page === 'ingestion' && (
+  <Suspense fallback={<div className="tp-empty" role="status">Loading Log Ingestion Lab…</div>}>
+    <LogIngestionLab
+      onIngested={() => {
+        refresh();
+        setEvidenceRefresh(v => v + 1);
+      }}
+      onViewTimeline={() => openPage('timeline')}
+    />
+  </Suspense>
+)}
+
+{page === 'investigations' && (
+  <Suspense fallback={<div className="tp-empty" role="status">Loading Investigations…</div>}>
+    <Investigations events={events} />
+  </Suspense>
+)}
+
+{page === 'graph' && (
+  <Suspense fallback={<div className="tp-empty" role="status">Loading Investigation Graph…</div>}>
+    <div className="tp-graph-page">
+      <InvestigationGraph theme={theme} />
+    </div>
+  </Suspense>
+)}
+
+{page === 'reports' && (
+  <Suspense fallback={<div className="tp-empty" role="status">Loading Reports…</div>}>
+    <div className="tp-reports-page">
+      <Reports onExportCsv={exportCsv} />
+    </div>
+  </Suspense>
+)}
 }} disabled={loading}><RefreshCw size={16} className={loading ? 'tp-spin' : ''}/> Refresh</Button>{page === 'timeline' && <Button className="tp-button primary" onClick={exportCsv}><ArrowDownToLine size={16}/> Export CSV</Button>}</div></div>
       {error && <div className="tp-error" role="alert">{error}</div>}
       {page === 'overview' && <>
@@ -262,13 +319,72 @@ export default function Dashboard({ user, onSignOut }) {
       </section>
     </div>}
     {page === 'evidence' && (
-  <EvidenceLibrary refreshSignal={evidenceRefresh} />
-)}
-      {page === 'ingestion' && <LogIngestionLab onIngested={() => { refresh(); setEvidenceRefresh(v => v + 1); }} onViewTimeline={() => openPage('timeline')} />}
-      {page === 'investigations' && <Investigations events={events} />}
-      {page === 'graph' && <InvestigationGraph />}
-      {page === 'reports' && <Reports onExportCsv={exportCsv} />}
+      <Suspense fallback={<div className="tp-empty" role="status">Loading Evidence Library…</div>}>
+        <EvidenceLibrary refreshSignal={evidenceRefresh} />
+      </Suspense>
+    )}
+    {page === 'ingestion' && (
+      <Suspense fallback={<div className="tp-empty" role="status">Loading Log Ingestion Lab…</div>}>
+        <LogIngestionLab
+          onIngested={() => {
+            refresh();
+            setEvidenceRefresh(v => v + 1);
+          }}
+          onViewTimeline={() => openPage('timeline')}
+        />
+      </Suspense>
+    )}
+    {page === 'investigations' && (
+      <Suspense fallback={<div className="tp-empty" role="status">Loading Investigations…</div>}>
+        <Investigations events={events} />
+      </Suspense>
+    )}
+    {page === 'graph' && (
+      <Suspense fallback={<div className="tp-empty" role="status">Loading Investigation Graph…</div>}>
+        <div className="tp-graph-page">
+          <InvestigationGraph theme={theme} />
+        </div>
+      </Suspense>
+    )}
+    {page === 'reports' && (
+      <Suspense fallback={<div className="tp-empty" role="status">Loading Reports…</div>}>
+        <div className="tp-reports-page">
+          <Reports onExportCsv={exportCsv} />
+        </div>
+      </Suspense>
+    )}
       </div>
+      {/* TRACEPOINT_HACKATHON_FOOTER_V3 */}
+      <footer className="tp-site-footer" aria-label="TracePoint project information">
+        <div className="tp-footer-about">
+          <span className="tp-footer-brand">tracepoint<span>.</span></span>
+          <h2>About TracePoint</h2>
+          <p>TracePoint is a cybersecurity investigation prototype built for a hackathon project. It helps analysts review collected logs, correlate events, and inspect evidence integrity. It is a demonstration tool, not a certified security product.</p>
+          <small>Hackathon prototype · For demonstration and evaluation</small>
+        </div>
+        <div className="tp-footer-column">
+          <h3>Quick links</h3>
+          <button type="button" onClick={() => openPage('overview')}>Overview</button>
+          <button type="button" onClick={() => openPage('timeline')}>Event timeline</button>
+          <button type="button" onClick={() => openPage('evidence')}>Evidence library</button>
+          <button type="button" onClick={() => openPage('investigations')}>Investigations</button>
+        </div>
+        <div className="tp-footer-column">
+          <h3>Tools</h3>
+          <button type="button" onClick={() => openPage('ingestion')}>Log Ingestion Lab</button>
+          <button type="button" onClick={() => openPage('graph')}>Investigation Graph</button>
+          <button type="button" onClick={() => openPage('reports')}>Reports</button>
+          <button type="button" onClick={() => { setTheme(current => current === 'dark' ? 'light' : 'dark'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Switch appearance</button>
+        </div>
+        <div className="tp-footer-column tp-footer-info">
+          <h3>Project information</h3>
+          <p>Focus: log analysis, event correlation, parsing gaps, and evidence integrity.</p>
+          <p>Results depend on evidence collected in this workspace.</p>
+          <p className="tp-footer-note">Prototype status: not a replacement for a complete incident-response or forensic workflow.</p>
+        </div>
+        <div className="tp-footer-bottom"><span>© {new Date().getFullYear()} TracePoint · Hackathon prototype</span><span>Built for security investigation and learning.</span></div>
+      </footer>
+
     </main>
     {selected && <div className="tp-overlay" onMouseDown={() => setSelected(null)}><aside className="tp-drawer" onMouseDown={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Event details"><div className="tp-drawer-header"><div><span>Event inspection</span><h2>{eventType(selected)}</h2><div className={`tp-severity ${severityClass(severity(selected))}`}>{severity(selected)}</div></div><button onClick={() => setSelected(null)} aria-label="Close event details"><X size={21}/></button></div><div className="tp-drawer-body"><h3>Event information</h3>{[['Timestamp', fullDate(timestamp(selected))], ['Source device', device(selected)], ['Username', selected.username], ['Event type', eventType(selected)], ['Severity', severity(selected)], ['Message', message(selected)]].map(([label, value]) => <div className="tp-detail" key={label}><span>{label}</span><strong>{text(value)}</strong></div>)}<h3>Raw event data</h3><pre>{JSON.stringify(selected, null, 2)}</pre></div></aside></div>}
   </div>;
