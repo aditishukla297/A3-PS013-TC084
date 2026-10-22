@@ -484,3 +484,6 @@ app.include_router(graph_router)
 # TRACEPOINT_TRUST_SCORE_V1
 from app.trust_score import router as trust_score_router
 app.include_router(trust_score_router)
+
+from app.assistant import router as assistant_router
+app.include_router(assistant_router)

@@ -203,6 +203,7 @@ def validate_event_reference(reference: str):
             "message": str(
                 event.get("message")
                 or event.get("raw_line")
+                or event.get("raw_log")
                 or ""
             )[:100],
         }
