@@ -1,20 +1,37 @@
-# AIORI-3 HACKATHON PROJECTS
+# TracePoint — AI-Assisted Incident Investigation
 
-This repository contains the code and resources developed by our team during the AIORI-3 Hackathon.
+TracePoint is a cybersecurity investigation platform developed by **Team The Missing Links** for the AIORI-3 Hackathon. It helps small teams analyze security logs, correlate events, reconstruct incident timelines, and verify evidence integrity.
+
 ## 🚀 Live Demo
 
-**Tracepoint — Incident Timeline and Evidence Collection Platform**
+**[Open TracePoint](https://tracepoint.jassist.qzz.io/)**
 
-🌐 **Live Application:** [https://tracepoint.jassist.qzz.io](https://tracepoint.jassist.qzz.io)
+## ✨ Features
 
-Tracepoint is a web-based incident investigation platform designed to help small teams collect evidence, analyze security logs, and reconstruct incident timelines.
+- **Log Ingestion:** Collect and review security logs.
+- **Event Timeline:** Search events and investigate suspicious activity.
+- **Evidence Integrity:** Verify evidence using SHA-256 hashes.
+- **Investigation Graph:** Visualize relationships between events.
+- **Grok AI Assistant:** Get AI-assisted explanations and investigative insights.
+- **Dashboard & Reports:** Monitor security activity and export events to CSV.
 
-**Technology Stack:** React, FastAPI, Python, AWS EC2, and Nginx.
+*AI-generated insights are investigative aids and must be verified against original evidence.*
 
+## 🛠️ Tech Stack
+
+React · Vite · Python · FastAPI · Grok AI · AWS EC2 · Nginx
+
+## 🏗️ Architecture
+
+Python Agent → FastAPI Backend → Evidence Storage & Event Analysis → React Dashboard
 
 ## 🎥 Hackathon Orientation Video
 
-Team: The Missing Links  
-Problem Statement: Incident Timeline and Evidence Collection for Small Teams
+[▶️ Watch the video](https://www.youtube.com/watch?v=txhwklIOars)
 
-[▶️ Watch our Orientation Video](https://www.youtube.com/watch?v=txhwklIOars)
+## 👥 Team The Missing Links
+
+**Problem Statement:** Incident Timeline and Evidence Collection for Small Teams
+
+*TracePoint — Follow the signal. Verify the evidence.*
+
