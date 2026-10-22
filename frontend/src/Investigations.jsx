@@ -30,6 +30,11 @@ export default function Investigations({ events = [] }) {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [chatQuestion, setChatQuestion] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [chatError, setChatError] = useState('');
+
 
   async function loadCases() {
     setLoading(true);
@@ -62,6 +67,51 @@ export default function Investigations({ events = [] }) {
       await openCase(result.id);
     } catch (err) { setError(err.message); }
     finally { setBusy(false); }
+  }
+
+  async function askInvestigationAssistant(e) {
+    e.preventDefault();
+    const question = chatQuestion.trim();
+    if (!question || !active || chatBusy) return;
+
+    setChatQuestion('');
+    setChatError('');
+    setChatBusy(true);
+
+    const history = chatMessages
+      .filter(message => message.role === 'user' || message.role === 'assistant')
+      .slice(-10)
+      .map(({ role, content }) => ({ role, content }));
+
+    setChatMessages(previous => [
+      ...previous,
+      { role: 'user', content: question },
+    ]);
+
+    try {
+      const result = await request(`${API}/${active.id}/ask`, {
+        method: 'POST',
+        body: JSON.stringify({
+          question,
+          conversation_history: history,
+        }),
+      });
+
+      setChatMessages(previous => [
+        ...previous,
+        {
+          role: 'assistant',
+          content: result.answer || 'The assistant returned no answer.',
+          sources: result.sources || [],
+          model: result.model || '',
+        },
+      ]);
+    } catch (err) {
+      setChatError(err.message || 'Could not contact the investigation assistant.');
+      setChatQuestion(question);
+    } finally {
+      setChatBusy(false);
+    }
   }
 
   const visible = useMemo(() => cases.filter(c => `${c.id} ${c.title} ${c.description} ${c.status} ${c.severity}`.toLowerCase().includes(query.toLowerCase())), [cases, query]);
@@ -128,6 +178,100 @@ export default function Investigations({ events = [] }) {
         <h3><Link2 size={16}/> Linked events ({active.events?.length || 0})</h3>
         {(active.events || []).map(link => <div className="tp-inv-linked" key={link.id}><FileText size={15}/><span>{(() => { try { return eventLabel(JSON.parse(link.event_reference)); } catch { return link.event_reference; } })()}</span></div>)}
         {available.length ? <div className="tp-inv-inline"><select aria-label="Select timeline event" value={eventIndex} onChange={e => setEventIndex(e.target.value)}><option value="">Select a timeline event…</option>{available.map(({ e, index }) => <option key={index} value={index}>{eventLabel(e)}</option>)}</select><button className="tp-button" disabled={busy || eventIndex === ''} onClick={() => perform(() => request(`${API}/${active.id}/events`, { method: 'POST', body: JSON.stringify({ event_reference: eventRef(events[Number(eventIndex)]) }) }))}>Link</button></div> : <p className="tp-inv-muted">No additional timeline events available.</p>}
+        <section className="tp-ai-chat" aria-label="AI evidence assistant">
+          <div className="tp-ai-chat-heading">
+            <div>
+              <span className="tp-ai-eyebrow">TRACEPOINT INTELLIGENCE</span>
+              <h3>Ask about this investigation</h3>
+              <p>Answers are grounded in the events linked to this case.</p>
+            </div>
+            <span className="tp-ai-status">AI ASSISTANT</span>
+          </div>
+
+          <div className="tp-ai-messages" aria-live="polite">
+            {chatMessages.length === 0 && (
+              <div className="tp-ai-empty">
+                Ask about login activity, suspicious users, event order, or gaps in the evidence.
+              </div>
+            )}
+            {chatMessages.map((message, index) => (
+              <article
+                className={`tp-ai-message ${message.role === 'user' ? 'user' : 'assistant'}`}
+                key={`${index}-${message.role}`}
+              >
+                <span className="tp-ai-message-role">
+                  {message.role === 'user' ? 'YOU' : 'TRACEPOINT AI'}
+                </span>
+                <p>{message.content}</p>
+                {message.sources?.length > 0 && (
+                  <div className="tp-ai-sources">
+                    <strong>Evidence referenced ({message.sources.length})</strong>
+                    {message.sources.map((source, sourceIndex) => (
+                      <details key={`${source.id || 'source'}-${sourceIndex}`}>
+                        <summary>
+                          {source.id || `Source ${sourceIndex + 1}`}
+                          {source.event_type ? ` · ${source.event_type}` : ''}
+                          {source.timestamp ? ` · ${source.timestamp}` : ''}
+                        </summary>
+                        <dl>
+                          {[
+                            ['Device', source.device_id],
+                            ['Batch', source.batch_id],
+                            ['Username', source.username],
+                            ['Severity', source.severity],
+                            ['Line', source.line_number],
+                            ['Message', source.message],
+                            ['Parse status', source.parse_status],
+                          ].filter(([, value]) => value !== null && value !== undefined && value !== '')
+                            .map(([label, value]) => (
+                              <div key={label}>
+                                <dt>{label}</dt>
+                                <dd>{String(value)}</dd>
+                              </div>
+                            ))}
+                        </dl>
+                      </details>
+                    ))}
+                  </div>
+                )}
+              </article>
+            ))}
+            {chatBusy && (
+              <div className="tp-ai-thinking" role="status">
+                <span className="tp-ai-pulse" />
+                Reviewing linked evidence…
+              </div>
+            )}
+          </div>
+
+          {chatError && <p className="tp-ai-error" role="alert">{chatError}</p>}
+
+          <form className="tp-ai-form" onSubmit={askInvestigationAssistant}>
+            <textarea
+              rows={2}
+              minLength={3}
+              maxLength={2000}
+              value={chatQuestion}
+              onChange={e => setChatQuestion(e.target.value)}
+              placeholder="Ask a question about the evidence…"
+              aria-label="Question about this investigation"
+              disabled={chatBusy}
+              required
+            />
+            <button
+              className="tp-button primary"
+              type="submit"
+              disabled={chatBusy || chatQuestion.trim().length < 3}
+            >
+              <Send size={15} />
+              {chatBusy ? 'Analysing…' : 'Ask AI'}
+            </button>
+          </form>
+          <p className="tp-ai-disclaimer">
+            Verify conclusions against the original logs. The assistant may make mistakes.
+          </p>
+        </section>
+
         <h3>Analyst notes ({active.notes?.length || 0})</h3>
         <form onSubmit={e => { e.preventDefault(); const content = note.trim(); if (!content) return; perform(async () => { await request(`${API}/${active.id}/notes`, { method: 'POST', body: JSON.stringify({ content }) }); setNote(''); }); }}>
           <textarea rows={3} maxLength={5000} required value={note} onChange={e => setNote(e.target.value)} placeholder="Record findings, actions, or next steps…" aria-label="Analyst note"/>
