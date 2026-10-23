@@ -1,0 +1,168 @@
+/* TRACEPOINT_EYE_HERO_V1
+   Hero illustration + soft ambient glow; existing API workflows and route components stay untouched. */
+
+/* Softer, designed page canvas — subtle enough for an institutional portal. */
+.tp-app[data-theme="light"] .tp-main {
+  background:
+    radial-gradient(ellipse at 84% 1%, rgba(211, 231, 249, .56) 0, rgba(211, 231, 249, 0) 37%),
+    radial-gradient(ellipse at 8% 26%, rgba(231, 240, 249, .42) 0, rgba(231, 240, 249, 0) 33%),
+    #f4f7fa !important;
+}
+
+/* Branded detective badge replaces the generic drawn mark; a real image remains crisp at small sizes. */
+.tp-app .tp-brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: max-content;
+}
+.tp-app .tp-brand > .tp-brand-mark { display: none !important; }
+.tp-app .tp-brand::before {
+  content: "";
+  display: block;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #12365a url("/tracepoint-detective-circle.png") center / contain no-repeat;
+  box-shadow: 0 0 0 1px rgba(18, 54, 90, .10);
+}
+.tp-app .tp-brand-word {
+  font-size: 23px !important;
+  font-weight: 760 !important;
+  letter-spacing: -.8px !important;
+  line-height: 1.15;
+}
+.tp-app[data-theme="dark"] .tp-brand::before {
+  box-shadow: 0 0 0 1px #46566b, 0 2px 8px rgba(0, 0, 0, .24);
+}
+.tp-app .tp-footer-brand { display: inline-flex; align-items: center; gap: 8px; }
+.tp-app .tp-footer-brand::before {
+  content: "";
+  display: inline-block;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #12365a url("/tracepoint-detective-circle.png") center / contain no-repeat;
+}
+
+/* Overview hero: soft blurred blue light, HUD eye illustration, real content in front. */
+.tp-app .tp-forensic-intro {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  border-radius: 9px !important;
+  min-height: 224px;
+  box-shadow: 0 1px 2px rgba(21, 52, 82, .05);
+}
+.tp-app .tp-forensic-intro::before {
+  content: "" !important;
+  position: absolute;
+  inset: -24px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 80% 30%, rgba(108, 169, 220, .46) 0, rgba(108, 169, 220, 0) 31%),
+    radial-gradient(ellipse at 68% 82%, rgba(172, 207, 237, .62) 0, rgba(172, 207, 237, 0) 35%),
+    radial-gradient(ellipse at 97% 75%, rgba(214, 232, 248, .86) 0, rgba(214, 232, 248, 0) 30%);
+  filter: blur(16px);
+  opacity: .95;
+}
+.tp-app .tp-forensic-intro::after {
+  content: "" !important;
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 218px;
+  width: 270px;
+  height: 218px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background-image: url("/tracepoint-eye-hud.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: .92;
+  mix-blend-mode: multiply;
+  filter: saturate(.86) contrast(1.02);
+}
+.tp-app .tp-forensic-intro > * { position: relative; z-index: 1; }
+.tp-app .tp-forensic-intro-copy { width: 58%; max-width: 680px; }
+.tp-app .tp-forensic-intro-copy > strong { max-width: 700px; }
+
+.tp-app[data-theme="light"] .tp-forensic-intro {
+  background: linear-gradient(108deg, #f8fbff 0%, #eef5fb 52%, #dceafa 100%) !important;
+  color: #163b5d !important;
+  border: 1px solid #cddfed !important;
+}
+.tp-app[data-theme="light"] .tp-forensic-intro-copy > strong { color: #183d60 !important; }
+.tp-app[data-theme="light"] .tp-forensic-intro-copy > p { color: #49647e !important; }
+.tp-app[data-theme="light"] .tp-forensic-kicker { color: #2a628f !important; }
+.tp-app[data-theme="light"] .tp-forensic-intro-side {
+  border-left-color: rgba(64, 112, 154, .28) !important;
+}
+.tp-app[data-theme="light"] .tp-forensic-intro-side > span,
+.tp-app[data-theme="light"] .tp-forensic-intro-side > small { color: #59728b !important; }
+.tp-app[data-theme="light"] .tp-forensic-intro-side > strong { color: #183d60 !important; }
+
+/* Dark theme keeps the same artwork, restrained and integrated into the navy surface. */
+.tp-app[data-theme="dark"] .tp-forensic-intro {
+  background: linear-gradient(112deg, #18263a 0%, #1a2d43 55%, #203c57 100%) !important;
+  border: 1px solid #3a5068 !important;
+  color: #edf4fb !important;
+}
+.tp-app[data-theme="dark"] .tp-forensic-intro::before {
+  background:
+    radial-gradient(ellipse at 78% 32%, rgba(68, 125, 177, .38) 0, rgba(68, 125, 177, 0) 34%),
+    radial-gradient(ellipse at 68% 80%, rgba(56, 96, 136, .42) 0, rgba(56, 96, 136, 0) 38%);
+  opacity: .8;
+}
+.tp-app[data-theme="dark"] .tp-forensic-intro::after {
+  opacity: .40;
+  mix-blend-mode: screen;
+  filter: saturate(.7) brightness(.72);
+}
+.tp-app[data-theme="dark"] .tp-forensic-intro-copy > strong { color: #f0f5fb !important; }
+.tp-app[data-theme="dark"] .tp-forensic-intro-copy > p { color: #c3d1e1 !important; }
+.tp-app[data-theme="dark"] .tp-forensic-kicker { color: #a9cbef !important; }
+.tp-app[data-theme="dark"] .tp-forensic-intro-side { border-left-color: #435a74 !important; }
+.tp-app[data-theme="dark"] .tp-forensic-intro-side > span,
+.tp-app[data-theme="dark"] .tp-forensic-intro-side > small { color: #b0c0d2 !important; }
+.tp-app[data-theme="dark"] .tp-forensic-intro-side > strong { color: #edf4fb !important; }
+
+/* Selection contrast is intentional, instead of browser-default pale blue with dark text. */
+.tp-app ::selection, .tp-app *::selection {
+  background: #174f7b !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.tp-app[data-theme="dark"] ::selection, .tp-app[data-theme="dark"] *::selection {
+  background: #8cbcf0 !important;
+  color: #10263e !important;
+  -webkit-text-fill-color: #10263e !important;
+}
+
+/* Hide decorative green status pips; keep the status wording itself. */
+.tp-app .tp-forensic-status-dot,
+.tp-app .tp-api-pill::before,
+.tp-app .tp-api-pill.online::before { display: none !important; content: none !important; }
+
+@media (max-width: 900px) {
+  .tp-app .tp-brand::before { flex-basis: 39px; width: 39px; height: 39px; }
+  .tp-app .tp-brand-word { font-size: 21px !important; }
+  .tp-app .tp-forensic-intro-copy { width: 62%; max-width: 62%; }
+  .tp-app .tp-forensic-intro::after { width: 210px; height: 174px; right: 175px; opacity: .65; }
+}
+@media (max-width: 640px) {
+  .tp-app .tp-forensic-intro { min-height: 0; }
+  .tp-app .tp-forensic-intro-copy { width: 100%; max-width: 100%; }
+  .tp-app .tp-forensic-intro::before { inset: -12px; opacity: .55; }
+  .tp-app .tp-forensic-intro::after {
+    width: 148px; height: 126px; right: -12px; top: auto; bottom: -8px;
+    transform: none; opacity: .20;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-app .tp-forensic-intro::before { filter: none; }
+}

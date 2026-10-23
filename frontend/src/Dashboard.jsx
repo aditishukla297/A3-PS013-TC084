@@ -14,6 +14,9 @@ import {
 } from 'react';
 import { Wifi, WifiOff, Activity, ArrowDownToLine, ChevronRight, CircleHelp, Clock3, FileClock, FileText, Fingerprint, LayoutDashboard, LogOut, Menu, RefreshCw, Search, ShieldAlert, SlidersHorizontal, Terminal, X, GitBranch, Sun, Moon } from 'lucide-react';
 import './Tracepoint.css';
+import './TracepointTimelineGraphModal.css';
+import './TracepointInteractionPolish.css';
+import './TracepointPublicSector.css';
 
 const InvestigationGraph = lazy(() => import('./InvestigationGraph'));
 const Reports = lazy(() => import('./Reports'));
@@ -21,6 +24,9 @@ const Investigations = lazy(() => import('./Investigations'));
 const EvidenceLibrary = lazy(() => import('./EvidenceLibrary'));
 const LogIngestionLab = lazy(() => import('./LogIngestionLab'));
 
+import './TracepointOfficialPortal.css';
+import './TracepointEyeHero.css';
+import './TracepointEyeHeroFix.css';
 
 const navigation = [
   ['overview', 'Overview', LayoutDashboard],
@@ -55,7 +61,7 @@ function TrendChart({ events }) {
     });
   }, [events]);
   const max = Math.max(1, ...buckets.map(b => b.total));
-  return <section className="tp-card tp-chart-card"><div className="tp-card-head"><div><h2>Event activity</h2><p>Collected events over the last 7 days</p></div><span className="tp-period">Last 7 days</span></div><div className="tp-chart"><div className="tp-chart-lines"><span>{max}</span><span>{Math.round(max / 2)}</span><span>0</span></div><div className="tp-bars">{buckets.map((b, i) => <div className="tp-bar-column" key={i} title={`${b.label}: ${b.total} events, ${b.failures} failures`}><div className="tp-bar-track"><div className="tp-bar-stack" style={{ height: `${b.total ? Math.max(5, b.total / max * 100) : 0}%` }}><div className="tp-bar-failure" style={{ height: `${b.total ? b.failures / b.total * 100 : 0}%` }} /></div></div><span>{b.label}</span></div>)}</div></div><div className="tp-legend"><span><i className="tp-key-purple"/> Other events</span><span><i className="tp-key-orange"/> Authentication failures</span></div></section>;
+  return <section className="tp-card tp-chart-card"><div className="tp-card-head"><div><h2>Event activity</h2><p>Collected events over the last 7 days</p></div><span className="tp-period">Last 7 days</span></div><div className="tp-chart"><div className="tp-chart-lines"><span>{max}</span><span>{Math.round(max / 2)}</span><span>0</span></div><div className="tp-bars">{buckets.map((b, i) => <div className="tp-bar-column" key={i}><div className="tp-bar-track"><div className="tp-bar-stack" data-tooltip={`${b.label} · Other events: ${Math.max(0, b.total - b.failures)}`} style={{ height: `${b.total ? Math.max(5, b.total / max * 100) : 0}%` }}><div className="tp-bar-failure" data-tooltip={`${b.label} · Authentication failures: ${b.failures}`} style={{ height: `${b.total ? b.failures / b.total * 100 : 0}%` }} /></div></div><span>{b.label}</span></div>)}</div></div><div className="tp-legend"><span><i className="tp-key-purple"/> Other events</span><span><i className="tp-key-orange"/> Authentication failures</span></div></section>;
 }
 function SeverityCard({ events }) {
   const groups = ['critical', 'high', 'medium', 'warning', 'low', 'info', 'unknown'];
@@ -195,8 +201,14 @@ export default function Dashboard({ user, onSignOut }) {
     setMobileOpen(false);
   };
   return <div className="tp-app" data-theme={theme} data-page={page}>
+    {/* TRACEPOINT_PUBLIC_PORTAL_LAYOUT_V1: formal utility strip */}
+    <div className="tp-public-utility-bar">
+      <div className="tp-public-utility-label"><strong>TRACEPOINT</strong><span>/</span><span>Cyber Incident Investigation Workspace</span></div>
+      <div className="tp-public-utility-state" role="status"><span className={`tp-public-utility-dot ${apiStatus === 'online' ? 'is-online' : apiStatus === 'offline' ? 'is-offline' : ''}`} aria-hidden="true" />{apiStatus === 'online' ? 'API connection available' : apiStatus === 'offline' ? 'API connection unavailable' : 'Checking API connection'}<span>·</span><span>Hackathon prototype</span></div>
+    </div>
+
     <aside className={`tp-sidebar ${mobileOpen ? 'tp-open' : ''}`}>
-      <div className="tp-brand"><svg className="tp-brand-mark" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M8 9H17L26 18V27H17L8 18V9Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><path d="M8 18H17M17 9V18M17 18L26 27" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="8" cy="9" r="2.7" fill="currentColor"/><circle cx="17" cy="18" r="3" fill="currentColor"/><circle cx="26" cy="27" r="2.7" fill="currentColor"/></svg><span className="tp-brand-word">tracepoint<span>.</span></span></div>
+      <div className="tp-brand"><img className="tp-brand-mark tp-brand-image" src="/tracepoint-detective-circle.png" alt="" aria-hidden="true" /><span className="tp-brand-word">tracepoint<span>.</span></span></div>
       <div className="tp-workspace"><span className="tp-workspace-avatar">TP</span><div><strong>Security workspace</strong><small>Evidence & investigations</small></div></div>
       <div className="tp-nav-label">Workspace</div>
       <nav aria-label="Main navigation">{navigation.map(([id, label, Icon]) => <button key={id} className={`tp-nav-item ${page === id ? 'active' : ''}`} onClick={() => openPage(id)}><Icon size={18}/><span>{label}</span>{page === id && <ChevronRight size={15} className="tp-nav-chevron"/>}</button>)}</nav>
@@ -266,6 +278,7 @@ export default function Dashboard({ user, onSignOut }) {
       {error && <div className="tp-error" role="alert">{error}</div>}
       {page === 'overview' && <>
       <div className="tp-forensic-intro">
+        <img className="tp-eye-hud-art" src="/tracepoint-eye-hud.png" alt="" aria-hidden="true" />
         <div className="tp-forensic-intro-copy">
           <span className="tp-forensic-kicker"><Activity size={14}/> LIVE EVIDENCE OVERVIEW</span>
           <strong>Follow the signal. Verify the evidence.</strong>
@@ -277,6 +290,22 @@ export default function Dashboard({ user, onSignOut }) {
           <small>Based on the current event timeline</small>
         </div>
       </div>
+      {/* TRACEPOINT_PUBLIC_PORTAL_SERVICES_V1: functional quick-access tiles */}
+      <nav className="tp-portal-services" aria-label="Quick access to TracePoint tools">
+        {[
+          ['ingestion', 'Log Ingestion Lab', 'Submit and inspect sample logs', Terminal],
+          ['timeline', 'Event Timeline', 'Search collected security events', Activity],
+          ['evidence', 'Evidence Register', 'Review evidence and SHA-256 records', Fingerprint],
+          ['graph', 'Investigation Graph', 'Explore linked event sequences', GitBranch],
+          ['reports', 'Reports & Export', 'Review and export investigation reports', FileText],
+        ].map(([id, label, description, Icon]) => (
+          <button key={id} type="button" className="tp-portal-service" onClick={() => openPage(id)}>
+            <span className="tp-portal-service-icon"><Icon size={21} aria-hidden="true" /></span>
+            <span className="tp-portal-service-copy"><strong>{label}</strong><small>{description}</small></span>
+            <span className="tp-portal-service-open">Open tool <ChevronRight aria-hidden="true" /></span>
+          </button>
+        ))}
+      </nav>
       <div className="tp-metrics tp-forensic-metrics">
         <Metric label="Collected events" value={loading ? '…' : events.length.toLocaleString()} note="Available for inspection" icon={Activity}/>
         <Metric label="Authentication failures" value={loading ? '…' : failures.toLocaleString()} note={`${affectedDevices} source ${affectedDevices === 1 ? 'device' : 'devices'} affected`} icon={ShieldAlert}/>
@@ -386,6 +415,6 @@ export default function Dashboard({ user, onSignOut }) {
       </footer>
 
     </main>
-    {selected && <div className="tp-overlay" onMouseDown={() => setSelected(null)}><aside className="tp-drawer" onMouseDown={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Event details"><div className="tp-drawer-header"><div><span>Event inspection</span><h2>{eventType(selected)}</h2><div className={`tp-severity ${severityClass(severity(selected))}`}>{severity(selected)}</div></div><button onClick={() => setSelected(null)} aria-label="Close event details"><X size={21}/></button></div><div className="tp-drawer-body"><h3>Event information</h3>{[['Timestamp', fullDate(timestamp(selected))], ['Source device', device(selected)], ['Username', selected.username], ['Event type', eventType(selected)], ['Severity', severity(selected)], ['Message', message(selected)]].map(([label, value]) => <div className="tp-detail" key={label}><span>{label}</span><strong>{text(value)}</strong></div>)}<h3>Raw event data</h3><pre>{JSON.stringify(selected, null, 2)}</pre></div></aside></div>}
+    {selected && <div className="tp-overlay tp-timeline-event-overlay" onMouseDown={() => setSelected(null)}><aside className="tp-drawer tp-timeline-event-modal" onMouseDown={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Event details"><div className="tp-drawer-header"><div><span>Event inspection</span><h2>{eventType(selected)}</h2><div className={`tp-severity ${severityClass(severity(selected))}`}>{severity(selected)}</div></div><button onClick={() => setSelected(null)} aria-label="Close event details"><X size={21}/></button></div><div className="tp-drawer-body"><h3>Event information</h3>{[['Timestamp', fullDate(timestamp(selected))], ['Source device', device(selected)], ['Username', selected.username], ['Event type', eventType(selected)], ['Severity', severity(selected)], ['Message', message(selected)]].map(([label, value]) => <div className="tp-detail" key={label}><span>{label}</span><strong>{text(value)}</strong></div>)}<h3>Raw event data</h3><pre>{JSON.stringify(selected, null, 2)}</pre></div></aside></div>}
   </div>;
 }

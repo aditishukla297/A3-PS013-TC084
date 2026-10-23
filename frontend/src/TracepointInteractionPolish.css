@@ -1,0 +1,223 @@
+/* TRACEPOINT_INTERACTION_POLISH_V1
+   Centered investigation dialogs, accessible graph hover details, consistent interaction polish. */
+
+/* Both selected-investigation details AND New investigation use centered modals. */
+.tp-app .tp-overlay.tp-inv-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  overflow-y: auto !important;
+  background: rgba(11, 22, 37, .58) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.tp-app .tp-investigation-modal {
+  position: relative !important;
+  inset: auto !important;
+  flex: 0 1 auto !important;
+  height: auto !important;
+  width: min(940px, calc(100vw - 48px)) !important;
+  max-width: 940px !important;
+  max-height: min(88dvh, 900px) !important;
+  margin: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 1px solid #cdd9e6 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 28px 90px rgba(5, 18, 34, .34) !important;
+  background: #ffffff !important;
+  color: #21354a !important;
+  transform: none !important;
+}
+.tp-app .tp-investigation-create-modal { width: min(620px, calc(100vw - 48px)) !important; max-width: 620px !important; }
+.tp-app .tp-investigation-modal .tp-drawer-header {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 18px !important;
+  padding: 22px 26px !important;
+  background: #f2f6fa !important;
+  border-bottom: 1px solid #d9e2ec !important;
+  color: #173a5c !important;
+}
+.tp-app .tp-investigation-modal .tp-drawer-header h2 {
+  margin: 6px 0 10px !important;
+  color: #173a5c !important;
+  font-size: clamp(21px, 2.2vw, 28px) !important;
+  line-height: 1.3 !important;
+  overflow-wrap: anywhere;
+}
+.tp-app .tp-investigation-modal .tp-drawer-header span:not(.tp-inv-pill) { color: #526a81 !important; font-size: 12px !important; }
+.tp-app .tp-investigation-modal .tp-drawer-header button {
+  flex: 0 0 auto !important; display: grid !important; place-items: center !important;
+  width: 38px !important; height: 38px !important; border: 1px solid #d1dce8 !important;
+  border-radius: 8px !important; background: #ffffff !important; color: #234565 !important;
+}
+.tp-app .tp-investigation-modal .tp-drawer-body {
+  flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important;
+  padding: 24px 26px 28px !important; background: #ffffff !important; color: #2c4055 !important;
+  overscroll-behavior: contain;
+}
+.tp-app .tp-investigation-modal .tp-drawer-body h3 { margin: 22px 0 12px !important; color: #173a5c !important; font-size: 17px !important; }
+.tp-app .tp-investigation-modal .tp-drawer-body h3:first-child { margin-top: 0 !important; }
+.tp-app .tp-investigation-modal .tp-inv-description,
+.tp-app .tp-investigation-modal .tp-inv-muted { color: #52677c !important; font-size: 14px !important; line-height: 1.7 !important; }
+.tp-app .tp-investigation-modal .tp-detail { border-color: #e0e7ef !important; }
+.tp-app .tp-investigation-modal .tp-detail span,
+.tp-app .tp-investigation-modal .tp-inv-status-label,
+.tp-app .tp-investigation-modal .tp-inv-form label { color: #435a70 !important; font-size: 14px !important; }
+.tp-app .tp-investigation-modal .tp-detail strong { color: #1d354d !important; font-size: 14px !important; }
+.tp-app .tp-investigation-modal .tp-inv-linked { color: #324a61 !important; border-color: #e3eaf1 !important; font-size: 13px !important; }
+.tp-app .tp-investigation-modal .tp-inv-form { gap: 18px !important; }
+.tp-app .tp-investigation-modal input,
+.tp-app .tp-investigation-modal textarea,
+.tp-app .tp-investigation-modal select { min-height: 42px; background: #ffffff !important; color: #21354a !important; border-color: #cbd8e5 !important; font-size: 14px !important; }
+.tp-app .tp-investigation-modal textarea { min-height: 120px; }
+.tp-app .tp-investigation-modal input::placeholder,
+.tp-app .tp-investigation-modal textarea::placeholder { color: #78899b !important; opacity: 1; }
+.tp-app .tp-investigation-modal .tp-ai-chat { background: #f5f8fb !important; border-color: #d7e1eb !important; }
+.tp-app .tp-investigation-modal .tp-ai-chat h3,
+.tp-app .tp-investigation-modal .tp-ai-chat strong { color: #173a5c !important; }
+.tp-app .tp-investigation-modal .tp-ai-chat p,
+.tp-app .tp-investigation-modal .tp-ai-chat .tp-ai-empty { color: #52677c !important; }
+.tp-app .tp-investigation-modal .tp-ai-message { border-color: #dce5ee !important; }
+
+/* Dark-mode surfaces and form controls. */
+.tp-app[data-theme="dark"] .tp-overlay.tp-inv-modal-overlay { background: rgba(2, 8, 18, .76) !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal { background: #141e2c !important; color: #e8eef6 !important; border-color: #3b4b60 !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-drawer-header { background: #1b2a3c !important; border-color: #3b4b60 !important; color: #edf3fa !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-drawer-header h2,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-drawer-body h3 { color: #f0f5fb !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-drawer-header span:not(.tp-inv-pill),
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-inv-description,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-inv-muted,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-detail span,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-inv-status-label,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-inv-form label { color: #bdcadd !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-drawer-body { background: #141e2c !important; color: #e1e9f3 !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-detail,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-inv-linked { border-color: #34445a !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-detail strong,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-inv-linked { color: #e1e9f3 !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal input,
+.tp-app[data-theme="dark"] .tp-investigation-modal textarea,
+.tp-app[data-theme="dark"] .tp-investigation-modal select { background: #0d1725 !important; color: #edf3fa !important; border-color: #41536b !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal input::placeholder,
+.tp-app[data-theme="dark"] .tp-investigation-modal textarea::placeholder { color: #a4b2c5 !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-ai-chat { background: #182638 !important; border-color: #3a4b61 !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-ai-chat h3,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-ai-chat strong { color: #edf3fa !important; }
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-ai-chat p,
+.tp-app[data-theme="dark"] .tp-investigation-modal .tp-ai-chat .tp-ai-empty { color: #b8c6d8 !important; }
+
+/* Graph node, edge and metric hover explanations. */
+.tp-app .tp-graph-phase5-panel { overflow: visible !important; }
+.tp-app .tp-graph-sequence { position: relative; overflow: visible !important; }
+.tp-app .tp-graph-node[data-tooltip], .tp-app .tp-graph-stats > [data-tooltip], .tp-app .tp-graph-edge[data-tooltip] { position: relative; }
+.tp-app .tp-graph-node[data-tooltip] { z-index: 1; overflow: visible !important; cursor: pointer; }
+.tp-app .tp-graph-node[data-tooltip]::after,
+.tp-app .tp-graph-stats > [data-tooltip]::after,
+.tp-app .tp-graph-edge[data-tooltip]::after {
+  content: attr(data-tooltip); position: absolute; left: 10px; top: calc(100% + 9px); z-index: 200;
+  display: block; width: max-content; max-width: min(330px, 72vw); padding: 10px 12px;
+  border: 1px solid #385775; border-radius: 8px; background: #12365a; color: #ffffff;
+  font-family: 'Geist', system-ui, sans-serif; font-size: 12px; font-weight: 500; line-height: 1.5;
+  text-align: left; white-space: normal; overflow-wrap: anywhere;
+  box-shadow: 0 10px 28px rgba(7, 22, 39, .24); opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(-4px); transition: opacity .14s ease, transform .14s ease, visibility .14s;
+}
+.tp-app .tp-graph-node[data-tooltip]::after { font-weight: 550; }
+.tp-app .tp-graph-node[data-tooltip]:hover, .tp-app .tp-graph-node[data-tooltip]:focus-visible,
+.tp-app .tp-graph-stats > [data-tooltip]:hover, .tp-app .tp-graph-stats > [data-tooltip]:focus-visible,
+.tp-app .tp-graph-edge[data-tooltip]:hover { z-index: 120 !important; }
+.tp-app .tp-graph-node[data-tooltip]:hover::after, .tp-app .tp-graph-node[data-tooltip]:focus-visible::after,
+.tp-app .tp-graph-stats > [data-tooltip]:hover::after, .tp-app .tp-graph-stats > [data-tooltip]:focus-visible::after,
+.tp-app .tp-graph-edge[data-tooltip]:hover::after { opacity: 1; visibility: visible; transform: translateY(0); }
+.tp-app .tp-graph-stats > [data-tooltip] { cursor: help; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.tp-app .tp-graph-stats > [data-tooltip]:hover { border-color: #7598b8 !important; box-shadow: 0 7px 20px rgba(18, 54, 90, .12) !important; transform: translateY(-2px); }
+.tp-app .tp-graph-edge[data-tooltip] { cursor: help; max-width: 100%; }
+.tp-app .tp-graph-edge[data-tooltip]::after { left: 50%; transform: translate(-50%, -4px); text-align: center; }
+.tp-app .tp-graph-edge[data-tooltip]:hover::after { transform: translate(-50%, 0); }
+.tp-app[data-theme="dark"] .tp-graph-node[data-tooltip]::after,
+.tp-app[data-theme="dark"] .tp-graph-stats > [data-tooltip]::after,
+.tp-app[data-theme="dark"] .tp-graph-edge[data-tooltip]::after { background: #243a52; border-color: #58789a; color: #f3f7fc; }
+.tp-app .tp-graph-node.failure:hover { border-color: #dc8b8b !important; box-shadow: 0 8px 24px rgba(166, 51, 51, .15) !important; }
+.tp-app .tp-graph-node.success:hover { border-color: #65b89a !important; box-shadow: 0 8px 24px rgba(34, 123, 86, .13) !important; }
+@media (max-width: 680px) {
+  .tp-app .tp-overlay.tp-inv-modal-overlay { padding: 10px !important; align-items: center !important; }
+  .tp-app .tp-investigation-modal, .tp-app .tp-investigation-create-modal, .tp-app .tp-investigation-detail-modal { width: calc(100vw - 20px) !important; max-width: none !important; max-height: 92dvh !important; border-radius: 11px !important; }
+  .tp-app .tp-investigation-modal .tp-drawer-header { padding: 16px 17px !important; }
+  .tp-app .tp-investigation-modal .tp-drawer-body { padding: 17px !important; }
+  .tp-app .tp-graph-node[data-tooltip]::after, .tp-app .tp-graph-stats > [data-tooltip]::after { max-width: min(280px, 76vw); left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-app .tp-graph-node[data-tooltip]::after, .tp-app .tp-graph-stats > [data-tooltip]::after, .tp-app .tp-graph-edge[data-tooltip]::after { transition: none; }
+}
+
+/* TRACEPOINT_OVERVIEW_BAR_TOOLTIP_V2 */
+/* TRACEPOINT_OVERVIEW_BAR_TOOLTIP_V2: Contextual hover tips are intentionally limited to the Overview bar chart. */
+.tp-app .tp-chart-card .tp-bar-stack[data-tooltip],
+.tp-app .tp-chart-card .tp-bar-failure[data-tooltip] {
+  overflow: visible !important;
+  position: relative;
+  cursor: help;
+}
+.tp-app .tp-chart-card .tp-bar-stack[data-tooltip] { z-index: 1; }
+.tp-app .tp-chart-card .tp-bar-failure[data-tooltip] { z-index: 3; }
+.tp-app .tp-chart-card .tp-bar-stack[data-tooltip]::after,
+.tp-app .tp-chart-card .tp-bar-failure[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 9px);
+  z-index: 300;
+  display: block;
+  width: max-content;
+  max-width: min(260px, 72vw);
+  padding: 9px 11px;
+  border: 1px solid #385775;
+  border-radius: 7px;
+  background: #12365a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  box-shadow: 0 8px 22px rgba(7, 22, 39, .22);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px);
+  transition: opacity .14s ease, transform .14s ease, visibility .14s;
+}
+.tp-app .tp-chart-card .tp-bar-stack[data-tooltip]:hover,
+.tp-app .tp-chart-card .tp-bar-failure[data-tooltip]:hover { z-index: 250 !important; }
+.tp-app .tp-chart-card .tp-bar-stack[data-tooltip]:hover::after,
+.tp-app .tp-chart-card .tp-bar-failure[data-tooltip]:hover::after {
+  opacity: 1; visibility: visible; transform: translate(-50%, 0);
+}
+/* When the amber overlay is hovered, show its own tip, not the blue segment's. */
+.tp-app .tp-chart-card .tp-bar-stack[data-tooltip]:has(.tp-bar-failure[data-tooltip]:hover)::after {
+  opacity: 0 !important; visibility: hidden !important;
+}
+.tp-app[data-theme="dark"] .tp-chart-card .tp-bar-stack[data-tooltip]::after,
+.tp-app[data-theme="dark"] .tp-chart-card .tp-bar-failure[data-tooltip]::after {
+  background: #243a52; border-color: #58789a; color: #f3f7fc;
+}
+@media (max-width: 680px) {
+  .tp-app .tp-chart-card .tp-bar-stack[data-tooltip]::after,
+  .tp-app .tp-chart-card .tp-bar-failure[data-tooltip]::after { max-width: min(220px, 68vw); font-size: 11.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-app .tp-chart-card .tp-bar-stack[data-tooltip]::after,
+  .tp-app .tp-chart-card .tp-bar-failure[data-tooltip]::after { transition: none; }
+}
+

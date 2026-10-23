@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Moon, Sun } from "lucide-react";
 import "./Auth.css";
+import "./TracepointAuthOfficial.css";
 
 export default function Auth({ onAuthenticated }) {
+  // TRACEPOINT_AUTH_ICON_THEME_TOGGLE_V1
   const [mode, setMode] = useState("login");
+  const [darkMode, setDarkMode] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,8 +45,17 @@ export default function Auth({ onAuthenticated }) {
   }
 
   return (
-    <div className="thread-auth">
+    <div className={`thread-auth ${darkMode ? "auth-dark" : ""}`}>
       <section className="auth-left">
+        <button
+          type="button"
+          className="auth-theme-toggle"
+          aria-label={darkMode ? "Switch to light appearance" : "Switch to dark appearance"}
+          title={darkMode ? "Switch to light appearance" : "Switch to dark appearance"}
+          onClick={() => setDarkMode(value => !value)}
+        >
+          {darkMode ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+        </button>
         <div className="auth-brand"><span>tracepoint<span className="auth-brand-dot">.</span></span></div>
         <div className="auth-form-area">
           <div className="auth-kicker">INCIDENT WORKSPACE</div>

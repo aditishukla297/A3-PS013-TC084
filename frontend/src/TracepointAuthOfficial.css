@@ -1,0 +1,313 @@
+/* TRACEPOINT_AUTH_PUBLIC_SECTOR_V1
+   Align login/signup with the TracePoint public-sector console: navy, blue, warm amber.
+   This stylesheet is scoped to authentication and intentionally avoids purple gradients. */
+.thread-auth {
+  min-height: 100vh;
+  background: #f5f7f9 !important;
+  color: #1d2d3d !important;
+  font-family: "Geist", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+.thread-auth .auth-left {
+  background: #ffffff !important;
+  color: #1d2d3d !important;
+}
+.thread-auth .auth-brand {
+  color: #153653 !important;
+  font-size: 25px !important;
+  letter-spacing: -0.8px !important;
+}
+.thread-auth .auth-brand-dot,
+.thread-auth .auth-logo span,
+.thread-auth .preview-brand span {
+  color: #2b6595 !important;
+}
+.thread-auth .auth-logo {
+  background: #edf3f8 !important;
+  color: #153653 !important;
+  border: 1px solid #d3dfe9 !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+}
+.thread-auth .auth-form-area h1 {
+  color: #153653 !important;
+  font-weight: 720 !important;
+  letter-spacing: -1px !important;
+}
+.thread-auth .auth-kicker {
+  color: #617184 !important;
+  letter-spacing: 1.15px !important;
+}
+.thread-auth .auth-kicker-dot {
+  background: #d78b2d !important;
+  box-shadow: none !important;
+}
+.thread-auth .auth-subtitle {
+  color: #657386 !important;
+}
+.thread-auth .auth-form-area label {
+  color: #33485c !important;
+}
+.thread-auth .auth-form-area input {
+  color: #1d2d3d !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5df !important;
+  border-radius: 5px !important;
+  box-shadow: none;
+}
+.thread-auth .auth-form-area input::placeholder {
+  color: #8a97a6 !important;
+}
+.thread-auth .auth-form-area input:focus {
+  border-color: #2b6595 !important;
+  box-shadow: 0 0 0 3px rgba(43, 101, 149, 0.13) !important;
+  outline: none !important;
+}
+.thread-auth .auth-password-wrap button {
+  color: #617184 !important;
+}
+.thread-auth .auth-submit {
+  color: #ffffff !important;
+  background: #153653 !important;
+  border: 1px solid #153653 !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+  font-weight: 650 !important;
+}
+.thread-auth .auth-submit:hover {
+  background: #214f76 !important;
+  border-color: #214f76 !important;
+}
+.thread-auth .auth-submit:focus-visible,
+.thread-auth .auth-switch button:focus-visible,
+.thread-auth .auth-password-wrap button:focus-visible {
+  outline: 3px solid rgba(43, 101, 149, 0.35) !important;
+  outline-offset: 2px !important;
+}
+.thread-auth .auth-switch {
+  color: #657386 !important;
+}
+.thread-auth .auth-switch button {
+  color: #2b6595 !important;
+  font-weight: 700 !important;
+}
+.thread-auth .auth-error {
+  background: #fff2ef !important;
+  color: #963e32 !important;
+  border: 1px solid #edc9c2 !important;
+  border-radius: 5px !important;
+}
+.thread-auth .auth-footer {
+  color: #788697 !important;
+}
+.thread-auth .auth-right {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 75% 18%, rgba(43, 101, 149, 0.09), transparent 37%),
+    linear-gradient(135deg, #f1f5f8 0%, #f7f8fa 52%, #eef3f6 100%) !important;
+  border-left: 1px solid #dce4eb !important;
+  color: #1d2d3d !important;
+}
+.thread-auth .auth-preview-label {
+  color: #566b7f !important;
+  letter-spacing: 1px !important;
+}
+.thread-auth .auth-preview-line {
+  background: #d78b2d !important;
+}
+.thread-auth .auth-preview-window {
+  background: #ffffff !important;
+  border: 1px solid #cdd8e2 !important;
+  border-radius: 5px !important;
+  box-shadow: 0 14px 36px rgba(21, 54, 83, 0.09) !important;
+  transform: none !important;
+}
+.thread-auth .preview-top {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dce4eb !important;
+}
+.thread-auth .preview-brand {
+  color: #153653 !important;
+}
+.thread-auth .preview-top-pill {
+  color: #687b8d !important;
+}
+.thread-auth .preview-avatar {
+  color: #153653 !important;
+  background: #edf3f8 !important;
+  border-radius: 4px !important;
+}
+.thread-auth .preview-sidebar {
+  background: #f7f9fb !important;
+  border-right: 1px solid #dce4eb !important;
+}
+.thread-auth .preview-nav {
+  color: #5f6f7f !important;
+  border-radius: 4px !important;
+}
+.thread-auth .preview-nav.active {
+  color: #153653 !important;
+  background: #e8f0f6 !important;
+  border-left: 3px solid #2b6595 !important;
+  font-weight: 700 !important;
+}
+.thread-auth .preview-content h3 {
+  color: #153653 !important;
+}
+.thread-auth .preview-small,
+.thread-auth .preview-content p,
+.thread-auth .preview-metrics small {
+  color: #718193 !important;
+}
+.thread-auth .preview-metrics div,
+.thread-auth .preview-table {
+  background: #ffffff !important;
+  border: 1px solid #dce4eb !important;
+  border-radius: 4px !important;
+}
+.thread-auth .preview-table-title {
+  color: #213b52 !important;
+}
+.thread-auth .preview-table-head {
+  background: #f4f7f9 !important;
+  color: #63778a !important;
+}
+.thread-auth .preview-table-row {
+  color: #31475b !important;
+  border-top: 1px solid #e8edf1 !important;
+}
+.thread-auth .preview-table-row em {
+  color: #617b90 !important;
+}
+.thread-auth .preview-dot,
+.thread-auth .preview-dot.purple {
+  background: #d78b2d !important;
+}
+.thread-auth .auth-preview-copy {
+  color: #1d2d3d !important;
+}
+.thread-auth .auth-preview-icon,
+.thread-auth .auth-preview-icon svg {
+  color: #2b6595 !important;
+}
+.thread-auth .auth-preview-copy h2 {
+  color: #153653 !important;
+  letter-spacing: -0.6px !important;
+}
+.thread-auth .auth-preview-copy p {
+  color: #617184 !important;
+}
+.thread-auth .auth-feature,
+.thread-auth .auth-feature svg {
+  color: #40586d !important;
+}
+@media (max-width: 850px) {
+  .thread-auth .auth-right { display: none !important; }
+  .thread-auth .auth-left { background: #ffffff !important; }
+}
+
+/* TRACEPOINT_AUTH_ICON_THEME_TOGGLE_V1 — icon-only authentication appearance switch */
+.thread-auth { position: relative; }
+.thread-auth .auth-left { position: relative; }
+.thread-auth .auth-theme-toggle {
+  position: absolute;
+  top: 25px;
+  right: 27px;
+  z-index: 5;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #425b70;
+  background: #ffffff;
+  border: 1px solid #cbd5df;
+  border-radius: 5px;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.thread-auth .auth-theme-toggle:hover { background: #edf3f8; border-color: #8ea7bc; }
+.thread-auth .auth-theme-toggle:focus-visible { outline: 3px solid rgba(43,101,149,.35); outline-offset: 2px; }
+.thread-auth .auth-theme-toggle svg { width: 18px; height: 18px; }
+
+/* The toggle changes only authentication screens; dashboard theme state is untouched. */
+.thread-auth.auth-dark,
+.thread-auth.auth-dark .auth-left {
+  background: #101b28 !important;
+  color: #eaf0f6 !important;
+}
+.thread-auth.auth-dark .auth-left { border-right-color: #2c3d50 !important; }
+.thread-auth.auth-dark .auth-brand,
+.thread-auth.auth-dark .auth-form-area h1 { color: #edf3f8 !important; }
+.thread-auth.auth-dark .auth-brand-dot,
+.thread-auth.auth-dark .preview-brand span,
+.thread-auth.auth-dark .auth-switch button { color: #83b5dc !important; }
+.thread-auth.auth-dark .auth-kicker { color: #a7b7c7 !important; }
+.thread-auth.auth-dark .auth-kicker-dot { background: #e0ad56 !important; }
+.thread-auth.auth-dark .auth-subtitle,
+.thread-auth.auth-dark .auth-switch { color: #afbdcb !important; }
+.thread-auth.auth-dark .auth-form-area label { color: #d8e2ec !important; }
+.thread-auth.auth-dark .auth-form-area input {
+  background: #172636 !important;
+  color: #eef4f9 !important;
+  border-color: #3a4f63 !important;
+}
+.thread-auth.auth-dark .auth-form-area input::placeholder { color: #91a2b2 !important; }
+.thread-auth.auth-dark .auth-form-area input:focus {
+  border-color: #78a9d2 !important;
+  box-shadow: 0 0 0 3px rgba(120,169,210,.18) !important;
+}
+.thread-auth.auth-dark .auth-password-wrap button { color: #bdcad6 !important; }
+.thread-auth.auth-dark .auth-submit {
+  color: #ffffff !important;
+  background: #2b6595 !important;
+  border-color: #2b6595 !important;
+}
+.thread-auth.auth-dark .auth-submit:hover { background: #397cac !important; border-color: #397cac !important; }
+.thread-auth.auth-dark .auth-switch button { color: #8fc5ed !important; }
+.thread-auth.auth-dark .auth-error { background: #3a2528 !important; color: #ffd9d5 !important; border-color: #75434a !important; }
+.thread-auth.auth-dark .auth-footer { color: #97a8b8 !important; }
+.thread-auth.auth-dark .auth-right {
+  background:
+    radial-gradient(ellipse at 75% 18%, rgba(77,139,186,.15), transparent 38%),
+    linear-gradient(135deg, #0b1520 0%, #111f2d 54%, #132537 100%) !important;
+  color: #eaf0f6 !important;
+  border-left-color: #2c3d50 !important;
+}
+.thread-auth.auth-dark .auth-preview-label { color: #b2c0ce !important; }
+.thread-auth.auth-dark .auth-preview-line { background: #e0ad56 !important; }
+.thread-auth.auth-dark .auth-preview-window { background: #111e2b !important; border-color: #3a4e61 !important; box-shadow: 0 14px 36px rgba(0,0,0,.24) !important; }
+.thread-auth.auth-dark .preview-top { background: #111e2b !important; border-bottom-color: #304357 !important; }
+.thread-auth.auth-dark .preview-brand { color: #eaf0f6 !important; }
+.thread-auth.auth-dark .preview-top-pill { color: #aebdcc !important; }
+.thread-auth.auth-dark .preview-avatar { color: #e5edf5 !important; background: #26394c !important; }
+.thread-auth.auth-dark .preview-sidebar { background: #0e1925 !important; border-right-color: #304357 !important; }
+.thread-auth.auth-dark .preview-nav { color: #aebdcc !important; }
+.thread-auth.auth-dark .preview-nav.active { color: #edf4fa !important; background: #21384c !important; border-left-color: #78a9d2 !important; }
+.thread-auth.auth-dark .preview-content h3 { color: #edf4fa !important; }
+.thread-auth.auth-dark .preview-small,
+.thread-auth.auth-dark .preview-content p,
+.thread-auth.auth-dark .preview-metrics small { color: #a5b5c4 !important; }
+.thread-auth.auth-dark .preview-metrics div,
+.thread-auth.auth-dark .preview-table { background: #142333 !important; border-color: #304357 !important; }
+.thread-auth.auth-dark .preview-table-title { color: #e1e9f1 !important; }
+.thread-auth.auth-dark .preview-table-title span { color: #9aabba !important; }
+.thread-auth.auth-dark .preview-table-head { background: #192a3b !important; color: #aebdcc !important; }
+.thread-auth.auth-dark .preview-table-row { color: #dce6ef !important; border-top-color: #283b4e !important; }
+.thread-auth.auth-dark .preview-table-row em { color: #aebdcc !important; }
+.thread-auth.auth-dark .preview-dot,
+.thread-auth.auth-dark .preview-dot.purple { background: #e0ad56 !important; }
+.thread-auth.auth-dark .auth-preview-copy { color: #eaf0f6 !important; }
+.thread-auth.auth-dark .auth-preview-icon,
+.thread-auth.auth-dark .auth-preview-icon svg { color: #8fc5ed !important; }
+.thread-auth.auth-dark .auth-preview-copy h2 { color: #edf4fa !important; }
+.thread-auth.auth-dark .auth-preview-copy p { color: #afbdcb !important; }
+.thread-auth.auth-dark .auth-feature,
+.thread-auth.auth-dark .auth-feature svg { color: #c0cfdb !important; }
+.thread-auth.auth-dark .auth-theme-toggle { color: #e7bd70; background: #1c2c3d; border-color: #41576b; }
+.thread-auth.auth-dark .auth-theme-toggle:hover { background: #263b50; border-color: #63809a; }
+@media (max-width: 850px) {
+  .thread-auth .auth-theme-toggle { top: 20px; right: 20px; }
+  .thread-auth.auth-dark .auth-left { background: #101b28 !important; }
+}

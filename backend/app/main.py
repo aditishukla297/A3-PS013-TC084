@@ -324,6 +324,39 @@ DEMO_SCENARIOS = {
         "log_type": "auth",
         "lines": ["Oct 19 10:24:00 demo-server sshd: Accepted password for admin"],
     },
+
+    "incident_01_ssh_bruteforce": {
+        "label": "INCIDENT 01 · SSH failure burst followed by success (synthetic)",
+        "log_type": "linux_syslog",
+        "source_timezone": "Asia/Kolkata",
+        "lines": [
+            "Oct 19 10:15:20 linux-server sshd: Failed password for root from 192.0.2.10 port 50231 ssh2",
+            "Oct 19 10:20:00 linux-server sshd: Failed password for admin from 192.0.2.10 port 50232 ssh2",
+            "Oct 19 10:21:10 linux-server sshd: Failed password for root from 192.0.2.10 port 50233 ssh2",
+            "Oct 19 10:24:00 linux-server sshd: Accepted password for admin from 192.0.2.10 port 50234 ssh2",
+        ],
+    },
+    "incident_02_windows_lockout": {
+        "label": "INCIDENT 02 · Windows failures and account lockout (synthetic)",
+        "log_type": "windows_event",
+        "source_timezone": "UTC",
+        "lines": [
+            '{"EventID":4625,"TimeCreated":"2026-10-19T10:14:20Z","TargetUserName":"analyst","Message":"An account failed to log on"}',
+            '{"EventID":4625,"TimeCreated":"2026-10-19T10:15:20Z","TargetUserName":"analyst","Message":"An account failed to log on"}',
+            '{"EventID":4740,"TimeCreated":"2026-10-19T10:16:20Z","TargetUserName":"analyst","Message":"A user account was locked out"}',
+            '{"EventID":4624,"TimeCreated":"2026-10-19T10:17:20Z","TargetUserName":"analyst","Message":"An account was successfully logged on"}',
+        ],
+    },
+    "incident_03_timezone_gaps": {
+        "label": "INCIDENT 03 · Cross-timezone correlation and parsing gap (synthetic)",
+        "log_type": "mixed_security",
+        "source_timezone": "Asia/Kolkata",
+        "lines": [
+            "2026-10-19 10:30:00.000000+0530 india-host sshd[1234]: Failed password for admin from 192.0.2.44 port 50300 ssh2",
+            '{"EventID":4624,"TimeCreated":"2026-10-19T05:00:00Z","TargetUserName":"admin","Message":"An account was successfully logged on"}',
+            '{"EventID":4625,"TimeCreated":"2026-10-19T05:02:00Z","TargetUserName":"admin","Message":"An account failed to log on"',
+        ],
+    },
 }
 
 class DemoIngestRequest(BaseModel):

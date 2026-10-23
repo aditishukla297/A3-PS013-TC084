@@ -1,0 +1,156 @@
+/* TRACEPOINT_TIMELINE_GRAPH_CENTERED_MODALS_V2 */
+/* Applied only to event-detail dialogs on Event Timeline and Investigation Graph. */
+.tp-overlay.tp-timeline-event-overlay,
+.tp-overlay.tp-graph-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1400 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 22px !important;
+  overflow: auto !important;
+  background: rgba(8, 20, 34, .64) !important;
+  -webkit-backdrop-filter: blur(7px) !important;
+  backdrop-filter: blur(7px) !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-timeline-event-modal,
+.tp-overlay.tp-graph-modal-overlay .tp-graph-event-modal {
+  position: relative !important;
+  inset: auto !important;
+  flex: 0 1 auto !important;
+  width: min(840px, calc(100vw - 44px)) !important;
+  max-width: 840px !important;
+  height: auto !important;
+  max-height: min(86dvh, 860px) !important;
+  margin: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transform: none !important;
+  border: 1px solid #cbd7e3 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  color: #21364b !important;
+  box-shadow: 0 28px 90px rgba(4, 16, 30, .34) !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-timeline-event-modal .tp-drawer-header,
+.tp-overlay.tp-graph-modal-overlay .tp-graph-event-modal .tp-drawer-header {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #dbe4ed !important;
+  background: #f1f6fa !important;
+  color: #173a5c !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-header h2,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-header h2 {
+  margin: 5px 0 0 !important;
+  color: #173a5c !important;
+  font-size: clamp(20px, 2.1vw, 27px) !important;
+  line-height: 1.3 !important;
+  overflow-wrap: anywhere !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-header span,
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-header small,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-header span,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-header small {
+  color: #536b82 !important;
+  font-size: 12px !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-header button,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-header button {
+  flex: 0 0 auto !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  border: 1px solid #cbd8e5 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #244866 !important;
+  cursor: pointer !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-body,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  padding: 22px 24px 26px !important;
+  background: #ffffff !important;
+  color: #293f55 !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-body h3,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-body h3 {
+  margin: 20px 0 11px !important;
+  color: #173a5c !important;
+  font-size: 16px !important;
+}
+.tp-overlay.tp-timeline-event-overlay .tp-drawer-body h3:first-child,
+.tp-overlay.tp-graph-modal-overlay .tp-drawer-body h3:first-child { margin-top: 0 !important; }
+.tp-overlay.tp-timeline-event-overlay .tp-detail,
+.tp-overlay.tp-graph-modal-overlay .tp-detail { border-color: #e0e7ef !important; gap: 14px !important; }
+.tp-overlay.tp-timeline-event-overlay .tp-detail span,
+.tp-overlay.tp-graph-modal-overlay .tp-detail span { color: #52677c !important; }
+.tp-overlay.tp-timeline-event-overlay .tp-detail strong,
+.tp-overlay.tp-graph-modal-overlay .tp-detail strong { color: #1d354d !important; overflow-wrap: anywhere !important; }
+.tp-overlay.tp-timeline-event-overlay pre,
+.tp-overlay.tp-graph-modal-overlay pre {
+  max-width: 100% !important;
+  max-height: 260px !important;
+  overflow: auto !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  padding: 14px !important;
+  border: 1px solid #dce5ee !important;
+  border-radius: 8px !important;
+  background: #f5f8fb !important;
+  color: #263e55 !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+/* Dark palette follows the app theme without changing the other drawers. */
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay { background: rgba(0, 0, 0, .74) !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-timeline-event-modal,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-graph-event-modal {
+  background: #141c2a !important; color: #e8edf6 !important; border-color: #3b4960 !important;
+}
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-header,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-header {
+  background: #202b3d !important; color: #edf2fa !important; border-color: #3b4960 !important;
+}
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-header h2,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-header h2,
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-body h3,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-body h3 { color: #edf2fa !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-header span,
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-header small,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-header span,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-header small,
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-detail span,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-detail span { color: #bccadd !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-body,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-body { background: #141c2a !important; color: #e1e9f3 !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-detail,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-detail { border-color: #34445a !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-detail strong,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-detail strong { color: #e1e9f3 !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay pre,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay pre { background: #101826 !important; color: #e1e9f3 !important; border-color: #354258 !important; }
+.tp-app[data-theme="dark"] .tp-overlay.tp-timeline-event-overlay .tp-drawer-header button,
+.tp-app[data-theme="dark"] .tp-overlay.tp-graph-modal-overlay .tp-drawer-header button { background: #263448 !important; color: #edf2fa !important; border-color: #44546b !important; }
+@media (max-width: 640px) {
+  .tp-overlay.tp-timeline-event-overlay,
+  .tp-overlay.tp-graph-modal-overlay { padding: 14px !important; }
+  .tp-overlay.tp-timeline-event-overlay .tp-timeline-event-modal,
+  .tp-overlay.tp-graph-modal-overlay .tp-graph-event-modal { width: calc(100vw - 28px) !important; max-height: 88dvh !important; border-radius: 11px !important; }
+  .tp-overlay.tp-timeline-event-overlay .tp-drawer-header,
+  .tp-overlay.tp-timeline-event-overlay .tp-drawer-body,
+  .tp-overlay.tp-graph-modal-overlay .tp-drawer-header,
+  .tp-overlay.tp-graph-modal-overlay .tp-drawer-body { padding: 17px !important; }
+}

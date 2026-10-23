@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Plus, Search, X, ShieldAlert, FileText, Link2, Send, RefreshCw } from 'lucide-react';
 import './Tracepoint.css';
 import './investigations.css';
+import './TracepointInteractionPolish.css';
 
 const API = '/api/v1/investigations';
 const stamp = v => v ? new Date(v).toLocaleString() : '—';
@@ -43,6 +44,17 @@ export default function Investigations({ events = [] }) {
     finally { setLoading(false); }
   }
   useEffect(() => { loadCases(); }, []);
+  useEffect(() => {
+    if (!active && !creating) return;
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        if (creating) setCreating(false);
+        else setActive(null);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [active, creating]);
 
   async function openCase(id) {
     try { setActive(await request(`${API}/${id}`)); setNote(''); setEventIndex(''); setError(''); }
@@ -147,7 +159,7 @@ export default function Investigations({ events = [] }) {
         </tbody></table></div>}
     </section>
 
-    {creating && <div className="tp-overlay" onMouseDown={() => setCreating(false)}><aside className="tp-drawer" role="dialog" aria-modal="true" aria-label="Create investigation" onMouseDown={e => e.stopPropagation()}>
+    {creating && <div className="tp-overlay tp-inv-modal-overlay tp-inv-create-overlay" onMouseDown={() => setCreating(false)}><aside className="tp-drawer tp-investigation-modal tp-investigation-create-modal" role="dialog" aria-modal="true" aria-label="Create investigation" onMouseDown={e => e.stopPropagation()}>
       <div className="tp-drawer-header"><div><span>New case</span><h2>Create investigation</h2></div><button onClick={() => setCreating(false)} aria-label="Close"><X size={21}/></button></div>
       <form className="tp-drawer-body tp-inv-form" onSubmit={createCase}>
         <label>Title<input required minLength={3} maxLength={160} value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} placeholder="e.g. Repeated SSH login failures"/></label>
@@ -157,7 +169,7 @@ export default function Investigations({ events = [] }) {
       </form>
     </aside></div>}
 
-    {active && !creating && <div className="tp-overlay" onMouseDown={() => setActive(null)}><aside className="tp-drawer tp-inv-drawer" role="dialog" aria-modal="true" aria-label="Investigation details" onMouseDown={e => e.stopPropagation()}>
+    {active && !creating && <div className="tp-overlay tp-inv-modal-overlay tp-inv-detail-overlay" onMouseDown={() => setActive(null)}><aside className="tp-drawer tp-inv-drawer tp-investigation-modal tp-investigation-detail-modal" role="dialog" aria-modal="true" aria-label="Investigation details" onMouseDown={e => e.stopPropagation()}>
       <div className="tp-drawer-header"><div><span>TP-{String(active.id).padStart(4, '0')}</span><h2>{active.title}</h2><span className={`tp-inv-pill ${active.severity}`}>{active.severity}</span></div><button onClick={() => setActive(null)} aria-label="Close"><X size={21}/></button></div>
       <div className="tp-drawer-body tp-inv-detail">
         <p className="tp-inv-description">{active.description || 'No description provided.'}</p>
