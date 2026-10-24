@@ -1,0 +1,120 @@
+/* TracePoint theme contrast and amber accent consistency */
+
+:root {
+  --tp-accent-amber: #e6ad32;
+  --tp-accent-amber-bright: #f2c14e;
+}
+
+/* Replace the old purple overview accents with TracePoint amber */
+.tp-app .tp-key-purple,
+.tp-app .tp-bar-stack {
+  background-color: var(--tp-accent-amber) !important;
+}
+
+.tp-app .tp-metric .tp-metric-label > svg,
+.tp-app .tp-metric-label > svg {
+  color: var(--tp-accent-amber-bright) !important;
+  stroke: currentColor !important;
+  background-color: rgba(230, 173, 50, 0.16) !important;
+  border: 1px solid rgba(230, 173, 50, 0.30) !important;
+  border-radius: 9px !important;
+  padding: 8px;
+  box-sizing: content-box;
+}
+
+/* Support common dark-mode markers used by the app */
+:is(
+  html.dark,
+  body.dark,
+  html.dark-mode,
+  body.dark-mode,
+  html.theme-dark,
+  body.theme-dark,
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  [data-mode="dark"]
+) .tp-app .tp-actions .tp-button,
+.tp-app:is(
+  .dark,
+  .dark-mode,
+  .theme-dark,
+  [data-theme="dark"],
+  [data-mode="dark"]
+) .tp-actions .tp-button {
+  background: #172a3e !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  border: 1px solid var(--tp-accent-amber) !important;
+  opacity: 1 !important;
+}
+
+:is(
+  html.dark,
+  body.dark,
+  html.dark-mode,
+  body.dark-mode,
+  html.theme-dark,
+  body.theme-dark,
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  [data-mode="dark"]
+) .tp-app .tp-actions .tp-button svg,
+.tp-app:is(
+  .dark,
+  .dark-mode,
+  .theme-dark,
+  [data-theme="dark"],
+  [data-mode="dark"]
+) .tp-actions .tp-button svg {
+  color: var(--tp-accent-amber-bright) !important;
+  stroke: currentColor !important;
+}
+
+:is(
+  html.dark,
+  body.dark,
+  html.dark-mode,
+  body.dark-mode,
+  html.theme-dark,
+  body.theme-dark,
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  [data-mode="dark"]
+) .tp-app .tp-actions .tp-button:hover,
+.tp-app:is(
+  .dark,
+  .dark-mode,
+  .theme-dark,
+  [data-theme="dark"],
+  [data-mode="dark"]
+) .tp-actions .tp-button:hover {
+  background: #203b53 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+:is(
+  html.dark,
+  body.dark,
+  html.dark-mode,
+  body.dark-mode,
+  html.theme-dark,
+  body.theme-dark,
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  [data-mode="dark"]
+) .tp-app .tp-metric-label,
+:is(
+  html.dark,
+  body.dark,
+  html.dark-mode,
+  body.dark-mode,
+  html.theme-dark,
+  body.theme-dark,
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  [data-mode="dark"]
+) .tp-app .tp-metric > span {
+  color: #c5d2e1 !important;
+  opacity: 1 !important;
+}

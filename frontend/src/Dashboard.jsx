@@ -29,6 +29,7 @@ import './styles/TracepointOfficialPortal.css';
 import './styles/TracepointEyeHero.css';
 import './styles/TracepointEyeHeroFix.css';
 
+import './styles/TracepointThemeContrast.css';
 const navigation = [
   ['overview', 'Overview', LayoutDashboard],
   ['timeline', 'Event timeline', Activity],
