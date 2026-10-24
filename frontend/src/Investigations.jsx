@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Search, X, ShieldAlert, FileText, Link2, Send, RefreshCw } from 'lucide-react';
-import './Tracepoint.css';
-import './investigations.css';
-import './TracepointInteractionPolish.css';
+import './styles/Tracepoint.css';
+import './styles/investigations.css';
+import './styles/TracepointInteractionPolish.css';
 
 const API = '/api/v1/investigations';
 const stamp = v => v ? new Date(v).toLocaleString() : '—';

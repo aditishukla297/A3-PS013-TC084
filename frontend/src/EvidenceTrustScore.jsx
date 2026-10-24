@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
-import './EvidenceTrustScore.css';
+import './styles/EvidenceTrustScore.css';
 
 export function useEvidenceTrustScores(refreshSignal = 0) {
   const [scores, setScores] = useState({});

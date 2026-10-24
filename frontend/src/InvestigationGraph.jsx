@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Activity, AlertTriangle, ArrowRight, Fingerprint, GitBranch, RefreshCw, ShieldAlert } from 'lucide-react';
-import './InvestigationGraph.css';
-import './TracepointInteractionPolish.css';
+import './styles/InvestigationGraph.css';
+import './styles/TracepointInteractionPolish.css';
 import { useEvidenceTrustScores, TrustScoreDetails } from './EvidenceTrustScore'; // GRAPH_TRUST_SCORE_V1
 
 export default function InvestigationGraph() {

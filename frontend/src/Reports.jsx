@@ -5,7 +5,7 @@ import {
   ArrowDownToLine, FileText, Search, RefreshCw,
   ShieldCheck, AlertCircle
 } from 'lucide-react';
-import './Reports.css';
+import './styles/Reports.css';
 
 const API = '/api/v1/investigations';
 

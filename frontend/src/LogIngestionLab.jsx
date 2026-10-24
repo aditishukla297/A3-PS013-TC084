@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, Database, FileCode2, Fingerprint, LoaderCircle, Send } from 'lucide-react';
-import './LogIngestionLab.css';
+import './styles/LogIngestionLab.css';
 
 export default function LogIngestionLab({ onIngested, onViewTimeline }) {
   const [scenarios, setScenarios] = useState([]);

@@ -12,7 +12,7 @@ import {
   X,
   Copy,
 } from "lucide-react";
-import "./Tracepoint.css";
+import "./styles/Tracepoint.css";
 // TRACEPOINT_TRUST_SCORE_V1
 import { useEvidenceTrustScores, TrustScoreBadge, TrustScoreDetails } from "./EvidenceTrustScore";
 

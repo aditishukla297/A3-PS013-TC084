@@ -12,11 +12,12 @@ import {
   useMemo,
   useState
 } from 'react';
-import { Wifi, WifiOff, Activity, ArrowDownToLine, ChevronRight, CircleHelp, Clock3, FileClock, FileText, Fingerprint, LayoutDashboard, LogOut, Menu, RefreshCw, Search, ShieldAlert, SlidersHorizontal, Terminal, X, GitBranch, Sun, Moon } from 'lucide-react';
-import './Tracepoint.css';
-import './TracepointTimelineGraphModal.css';
-import './TracepointInteractionPolish.css';
-import './TracepointPublicSector.css';
+import { Wifi, WifiOff, Activity, ArrowDownToLine, ChevronRight, CircleHelp, Clock3, FileClock, FileText, Fingerprint, LayoutDashboard, LogOut, Menu, RefreshCw, Search, ShieldAlert, SlidersHorizontal, Terminal, X, GitBranch, Sun, Moon, BookOpen} from 'lucide-react';
+import './styles/Tracepoint.css';
+import './styles/TracepointTimelineGraphModal.css';
+import './styles/TracepointInteractionPolish.css';
+import './styles/TracepointPublicSector.css';
+import './styles/TracepointWorkflowGuide.css';
 
 const InvestigationGraph = lazy(() => import('./InvestigationGraph'));
 const Reports = lazy(() => import('./Reports'));
@@ -24,9 +25,9 @@ const Investigations = lazy(() => import('./Investigations'));
 const EvidenceLibrary = lazy(() => import('./EvidenceLibrary'));
 const LogIngestionLab = lazy(() => import('./LogIngestionLab'));
 
-import './TracepointOfficialPortal.css';
-import './TracepointEyeHero.css';
-import './TracepointEyeHeroFix.css';
+import './styles/TracepointOfficialPortal.css';
+import './styles/TracepointEyeHero.css';
+import './styles/TracepointEyeHeroFix.css';
 
 const navigation = [
   ['overview', 'Overview', LayoutDashboard],
@@ -35,6 +36,7 @@ const navigation = [
   ['evidence', 'Evidence', Fingerprint],
   ['investigations', 'Investigations', ShieldAlert],
   ['graph', 'Investigation Graph', GitBranch],
+  ['guide', 'Workflow Guide', BookOpen],
   ['reports', 'Reports', FileText],
 ];
 const text = value => value === undefined || value === null || value === '' ? '—' : String(value);
@@ -235,7 +237,7 @@ export default function Dashboard({ user, onSignOut }) {
     <main className="tp-main">
     {/* TRACEPOINT_SINGLE_NAV_V1: status and account live in primary navigation */}
 
-      <div className="tp-content"><div className="tp-page-header"><div><h1>{title}</h1><p>{page === 'overview' ? 'Security activity and collected evidence across your workspace.' : page === 'timeline' ? 'Explore, filter and inspect security events.' : page === 'ingestion' ? 'Explore sample logs and follow them through the ingestion pipeline.' : page === 'evidence' ? 'Evidence collection and integrity records.' : page === 'graph' ? 'Explore evidence-linked authentication sequences.' : page === 'investigations' ? 'Review events and prepare incident investigations.' : 'Export collected security activity.'}</p></div><div className="tp-actions">
+      <div className="tp-content"><div className={`tp-page-header ${page === 'guide' ? 'tp-page-header-guide' : ''}`}><div><h1>{title}</h1><p>{page === 'overview' ? 'Security activity and collected evidence across your workspace.' : page === 'timeline' ? 'Explore, filter and inspect security events.' : page === 'ingestion' ? 'Explore sample logs and follow them through the ingestion pipeline.' : page === 'evidence' ? 'Evidence collection and integrity records.' : page === 'graph' ? 'Explore evidence-linked authentication sequences.' : page === 'investigations' ? 'Review events and prepare incident investigations.' : page === 'guide' ? 'Follow the workflow from raw log ingestion to an incident report.' : 'Export collected security activity.'}</p></div><div className="tp-actions">
           <button type="button" className="tp-button tp-theme-toggle" onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} aria-pressed={theme === 'dark'} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
@@ -375,6 +377,62 @@ export default function Dashboard({ user, onSignOut }) {
         </div>
       </Suspense>
     )}
+    {page === 'guide' && (
+      <section className="tp-workflow-guide" aria-label="TracePoint workflow guide">
+        <div className="tp-workflow-intro">
+          <span className="tp-workflow-kicker">INVESTIGATION WORKFLOW</span>
+          <h2>From raw logs to a defensible report</h2>
+          <p>Use this guide to move through the TracePoint workflow. Each action opens the corresponding workspace in this dashboard.</p>
+          <div className="tp-workflow-principle"><strong>Evidence first.</strong> Keep original evidence separate from normalized events, and review any parsing gaps instead of treating incomplete data as complete.</div>
+        </div>
+        <div className="tp-workflow-steps">
+          <article className="tp-workflow-step">
+            <span className="tp-workflow-number">01</span><div className="tp-workflow-step-copy">
+              <span className="tp-workflow-step-label">COLLECT</span><h3>Ingest raw logs</h3>
+              <p>Start with a log batch or the collection-agent flow. Check that the ingestion result is accepted before continuing.</p>
+              <button type="button" className="tp-button primary" onClick={() => openPage('ingestion')}>Open Log Ingestion Lab <ChevronRight size={16}/></button>
+            </div>
+          </article>
+          <article className="tp-workflow-step">
+            <span className="tp-workflow-number">02</span><div className="tp-workflow-step-copy">
+              <span className="tp-workflow-step-label">PRESERVE</span><h3>Check evidence integrity</h3>
+              <p>Review the stored evidence and its SHA-256 digest. A matching digest confirms the bytes match the recorded digest; it does not by itself prove origin or chain of custody.</p>
+              <button type="button" className="tp-button" onClick={() => openPage('evidence')}>Open Evidence <ChevronRight size={16}/></button>
+            </div>
+          </article>
+          <article className="tp-workflow-step">
+            <span className="tp-workflow-number">03</span><div className="tp-workflow-step-copy">
+              <span className="tp-workflow-step-label">NORMALIZE & SEARCH</span><h3>Review the event timeline</h3>
+              <p>Examine parsed events and timestamps, search by event, device or username, and check unusual ordering or records that did not parse cleanly.</p>
+              <button type="button" className="tp-button" onClick={() => openPage('timeline')}>Open Event Timeline <ChevronRight size={16}/></button>
+            </div>
+          </article>
+          <article className="tp-workflow-step">
+            <span className="tp-workflow-number">04</span><div className="tp-workflow-step-copy">
+              <span className="tp-workflow-step-label">INVESTIGATE</span><h3>Create an investigation</h3>
+              <p>Open a case, link relevant events, record analyst notes and keep the reason for each conclusion understandable.</p>
+              <button type="button" className="tp-button" onClick={() => openPage('investigations')}>Open Investigations <ChevronRight size={16}/></button>
+            </div>
+          </article>
+          <article className="tp-workflow-step">
+            <span className="tp-workflow-number">05</span><div className="tp-workflow-step-copy">
+              <span className="tp-workflow-step-label">CORRELATE</span><h3>Explore event relationships</h3>
+              <p>Use the graph to examine related authentication activity and sequences. Treat links as investigative leads that need evidence-based review.</p>
+              <button type="button" className="tp-button" onClick={() => openPage('graph')}>Open Investigation Graph <ChevronRight size={16}/></button>
+            </div>
+          </article>
+          <article className="tp-workflow-step">
+            <span className="tp-workflow-number">06</span><div className="tp-workflow-step-copy">
+              <span className="tp-workflow-step-label">DOCUMENT</span><h3>Generate the incident report</h3>
+              <p>Review the case report, linked events, analyst notes and integrity details before exporting or sharing the report.</p>
+              <button type="button" className="tp-button primary" onClick={() => openPage('reports')}>Open Reports <ChevronRight size={16}/></button>
+            </div>
+          </article>
+        </div>
+        <p className="tp-workflow-footnote">Tip: a normal-looking timeline does not prove that every record was parsed. Check evidence and parsing gaps before drawing conclusions.</p>
+      </section>
+    )}
+
     {page === 'reports' && (
       <Suspense fallback={<div className="tp-empty" role="status">Loading Reports…</div>}>
         <div className="tp-reports-page">

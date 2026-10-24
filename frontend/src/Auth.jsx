@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, Eye, EyeOff, Moon, Sun } from "lucide-react";
-import "./Auth.css";
-import "./TracepointAuthOfficial.css";
+import "./styles/Auth.css";
+import "./styles/TracepointAuthOfficial.css";
 
 export default function Auth({ onAuthenticated }) {
   // TRACEPOINT_AUTH_ICON_THEME_TOGGLE_V1
