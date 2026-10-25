@@ -93,3 +93,13 @@
     white-space: nowrap !important;
   }
 }
+
+
+/* TRACEPOINT_NAV_ROW_DIVIDER_V1 */
+@media (min-width: 601px) {
+  .tp-app .tp-sidebar nav {
+    border-top: 1px solid rgba(222, 237, 250, 0.22) !important;
+    box-shadow: 0 -1px 0 rgba(5, 20, 35, 0.12) !important;
+    padding-top: 3px !important;
+  }
+}

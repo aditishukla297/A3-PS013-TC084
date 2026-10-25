@@ -56,7 +56,7 @@ export default function Auth({ onAuthenticated }) {
         >
           {darkMode ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
         </button>
-        <div className="auth-brand"><span>tracepoint<span className="auth-brand-dot">.</span></span></div>
+        <div className="auth-brand"><span>Tracepoint<span className="auth-brand-dot">.</span></span></div>
         <div className="auth-form-area">
           <div className="auth-kicker">INCIDENT WORKSPACE</div>
           <h1>{isSignup ? "Create your workspace." : "Welcome back."}</h1>
