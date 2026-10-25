@@ -13,6 +13,7 @@ import {
   useState
 } from 'react';
 import { Wifi, WifiOff, Activity, ArrowDownToLine, ChevronRight, CircleHelp, Clock3, FileClock, FileText, Fingerprint, LayoutDashboard, LogOut, Menu, RefreshCw, Search, ShieldAlert, SlidersHorizontal, Terminal, X, GitBranch, Sun, Moon, BookOpen} from 'lucide-react';
+import IncidentTriageBenchmark from './IncidentTriageBenchmark';
 import './styles/Tracepoint.css';
 import './styles/TracepointTimelineGraphModal.css';
 import './styles/TracepointInteractionPolish.css';
@@ -30,6 +31,8 @@ import './styles/TracepointEyeHero.css';
 import './styles/TracepointEyeHeroFix.css';
 
 import './styles/TracepointThemeContrast.css';
+import './styles/TracepointResponsiveNavigation.css';
+import './styles/TracepointDesktopCompactHeight.css';
 const navigation = [
   ['overview', 'Overview', LayoutDashboard],
   ['timeline', 'Event timeline', Activity],
@@ -38,6 +41,7 @@ const navigation = [
   ['investigations', 'Investigations', ShieldAlert],
   ['graph', 'Investigation Graph', GitBranch],
   ['guide', 'Workflow Guide', BookOpen],
+  ['benchmark', 'Triage Benchmark', Clock3],
   ['reports', 'Reports', FileText],
 ];
 const text = value => value === undefined || value === null || value === '' ? '—' : String(value);
@@ -238,7 +242,7 @@ export default function Dashboard({ user, onSignOut }) {
     <main className="tp-main">
     {/* TRACEPOINT_SINGLE_NAV_V1: status and account live in primary navigation */}
 
-      <div className="tp-content"><div className={`tp-page-header ${page === 'guide' ? 'tp-page-header-guide' : ''}`}><div><h1>{title}</h1><p>{page === 'overview' ? 'Security activity and collected evidence across your workspace.' : page === 'timeline' ? 'Explore, filter and inspect security events.' : page === 'ingestion' ? 'Explore sample logs and follow them through the ingestion pipeline.' : page === 'evidence' ? 'Evidence collection and integrity records.' : page === 'graph' ? 'Explore evidence-linked authentication sequences.' : page === 'investigations' ? 'Review events and prepare incident investigations.' : page === 'guide' ? 'Follow the workflow from raw log ingestion to an incident report.' : 'Export collected security activity.'}</p></div><div className="tp-actions">
+      <div className="tp-content"><div className={`tp-page-header ${page === 'guide' ? 'tp-page-header-guide' : ''}`}><div><h1>{title}</h1><p>{page === 'overview' ? 'Security activity and collected evidence across your workspace.' : page === 'timeline' ? 'Explore, filter and inspect security events.' : page === 'ingestion' ? 'Explore sample logs and follow them through the ingestion pipeline.' : page === 'evidence' ? 'Evidence collection and integrity records.' : page === 'graph' ? 'Explore evidence-linked authentication sequences.' : page === 'investigations' ? 'Review events and prepare incident investigations.' : page === 'guide' ? 'Follow the workflow from raw log ingestion to an incident report.' : page === 'benchmark' ? 'Measure incident triage time using the same synthetic scenario and checklist.' : 'Export collected security activity.'}</p></div><div className="tp-actions">
           <button type="button" className="tp-button tp-theme-toggle" onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} aria-pressed={theme === 'dark'} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
@@ -378,6 +382,8 @@ export default function Dashboard({ user, onSignOut }) {
         </div>
       </Suspense>
     )}
+    {page === 'benchmark' && <IncidentTriageBenchmark openPage={openPage} />}
+
     {page === 'guide' && (
       <section className="tp-workflow-guide" aria-label="TracePoint workflow guide">
         <div className="tp-workflow-intro">

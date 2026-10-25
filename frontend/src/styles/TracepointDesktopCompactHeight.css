@@ -1,0 +1,95 @@
+/* Desktop/tablet navbar compactness — mobile layout intentionally untouched */
+@media (min-width: 601px) {
+  .tp-app .tp-sidebar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: 52px 36px !important;
+    grid-template-areas:
+      "brand account"
+      "navigation navigation" !important;
+    align-items: center !important;
+    align-content: start !important;
+    gap: 0 14px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 3px 22px 4px !important;
+    position: relative !important;
+    inset: auto !important;
+    overflow: visible !important;
+  }
+
+  .tp-app .tp-sidebar > .tp-brand {
+    grid-area: brand !important;
+    justify-self: start !important;
+    align-self: center !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 7px 0 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .tp-app .tp-sidebar-bottom {
+    grid-area: account !important;
+    justify-self: end !important;
+    align-self: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-flow: row nowrap !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    gap: 7px !important;
+  }
+
+  .tp-app .tp-sidebar-bottom .tp-topbar-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-flow: row nowrap !important;
+    gap: 7px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .tp-app .tp-sidebar nav {
+    grid-area: navigation !important;
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 3px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+  }
+
+  .tp-app .tp-sidebar nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .tp-app .tp-sidebar nav .tp-nav-item {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 32px !important;
+    margin: 0 !important;
+    padding: 6px 9px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+}
