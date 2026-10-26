@@ -235,3 +235,26 @@
 .tp-app[data-theme="dark"] .tp-sev-fill.sev-low {
   background-color: #78a9d2 !important;
 }
+
+
+/* TRACEPOINT_EVENT_ACTIVITY_COLORS_ONLY
+   Other events use the informational blue; authentication failures are orange. */
+.tp-app .tp-chart-card .tp-bar-stack,
+.tp-app .tp-chart-card .tp-key-purple {
+  background-color: #358bb1 !important;
+}
+
+.tp-app .tp-chart-card .tp-bar-failure,
+.tp-app .tp-chart-card .tp-key-orange {
+  background-color: #d97732 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-chart-card .tp-bar-stack,
+.tp-app[data-theme="dark"] .tp-chart-card .tp-key-purple {
+  background-color: #72b9d6 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-chart-card .tp-bar-failure,
+.tp-app[data-theme="dark"] .tp-chart-card .tp-key-orange {
+  background-color: #f08a43 !important;
+}
