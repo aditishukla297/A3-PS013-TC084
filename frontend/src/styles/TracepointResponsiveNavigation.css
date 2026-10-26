@@ -211,3 +211,43 @@
     flex-wrap: wrap !important;
   }
 }
+
+
+/* TRACEPOINT_IPHONE_NAV_WIDTH_FIX */
+@media (max-width: 600px) {
+  /* Remove duplicate account controls from the compact header row. */
+  .tp-app .tp-sidebar-bottom > .tp-profile,
+  .tp-app .tp-sidebar-bottom > .tp-signout {
+    display: none !important;
+  }
+
+  /* Give the brand and the remaining controls room to fit. */
+  .tp-app .tp-sidebar-bottom .tp-api-pill,
+  .tp-app .tp-sidebar-bottom .tp-topbar-divider {
+    display: none !important;
+  }
+
+  .tp-app .tp-sidebar-bottom,
+  .tp-app .tp-sidebar-bottom .tp-topbar-right {
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    gap: 6px !important;
+  }
+
+  .tp-app .tp-sidebar-bottom .tp-nav-theme-toggle {
+    display: inline-flex !important;
+    position: static !important;
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .tp-app .tp-sidebar > .tp-brand {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
