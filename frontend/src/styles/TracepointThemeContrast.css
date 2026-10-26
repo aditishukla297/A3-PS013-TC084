@@ -5,10 +5,85 @@
   --tp-accent-amber-bright: #f2c14e;
 }
 
-/* Replace the old purple overview accents with TracePoint amber */
+/* Keep brand amber, but distinguish chart data by meaning. */
 .tp-app .tp-key-purple,
 .tp-app .tp-bar-stack {
-  background-color: var(--tp-accent-amber) !important;
+  background-color: #2b6595 !important;
+}
+
+.tp-app .tp-key-orange,
+.tp-app .tp-bar-failure {
+  background-color: #d97732 !important;
+}
+
+/* Severity breakdown: red, orange, amber, blue, and teal. */
+.tp-app .tp-sev-dot.sev-critical,
+.tp-app .tp-sev-fill.sev-critical,
+.tp-app .tp-sev-dot.sev-error,
+.tp-app .tp-sev-fill.sev-error {
+  background-color: #b42318 !important;
+}
+
+.tp-app .tp-sev-dot.sev-high,
+.tp-app .tp-sev-fill.sev-high {
+  background-color: #dc4c45 !important;
+}
+
+.tp-app .tp-sev-dot.sev-medium,
+.tp-app .tp-sev-fill.sev-medium,
+.tp-app .tp-sev-dot.sev-warning,
+.tp-app .tp-sev-fill.sev-warning {
+  background-color: #d9a441 !important;
+}
+
+.tp-app .tp-sev-dot.sev-low,
+.tp-app .tp-sev-fill.sev-low {
+  background-color: #2b6595 !important;
+}
+
+.tp-app .tp-sev-dot.sev-info,
+.tp-app .tp-sev-fill.sev-info {
+  background-color: #238b8e !important;
+}
+
+/* Maintain distinct chart colors in dark mode. */
+.tp-app[data-theme="dark"] .tp-key-purple,
+.tp-app[data-theme="dark"] .tp-bar-stack {
+  background-color: #78a9d2 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-key-orange,
+.tp-app[data-theme="dark"] .tp-bar-failure {
+  background-color: #f08a43 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-critical,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-critical,
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-error,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-error {
+  background-color: #ff6b6b !important;
+}
+
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-high,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-high {
+  background-color: #ff8f70 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-medium,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-medium,
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-warning,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-warning {
+  background-color: #f2c14e !important;
+}
+
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-low,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-low {
+  background-color: #78a9d2 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-info,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-info {
+  background-color: #56b4b0 !important;
 }
 
 .tp-app .tp-metric .tp-metric-label > svg,
@@ -117,4 +192,46 @@
 ) .tp-app .tp-metric > span {
   color: #c5d2e1 !important;
   opacity: 1 !important;
+}
+
+
+/* TRACEPOINT_ACTIVITY_INFO_COLOR_MATCH_V2
+   Event activity uses the same blue as Info severity.
+   Low severity retains its darker, distinct blue. */
+.tp-app[data-theme="light"] .tp-chart-card .tp-bar-stack,
+.tp-app[data-theme="light"] .tp-chart-card .tp-key-purple {
+  background-color: #358bb1 !important;
+}
+
+.tp-app[data-theme="light"] .tp-chart-card .tp-bar-failure,
+.tp-app[data-theme="light"] .tp-chart-card .tp-key-orange {
+  background-color: #d97732 !important;
+}
+
+.tp-app[data-theme="light"] .tp-sev-dot.sev-low,
+.tp-app[data-theme="light"] .tp-sev-fill.sev-low {
+  background-color: #2b6595 !important;
+}
+
+.tp-app[data-theme="light"] .tp-sev-dot.sev-info,
+.tp-app[data-theme="light"] .tp-sev-fill.sev-info {
+  background-color: #358bb1 !important;
+}
+
+/* Dark mode: retain the same distinction. */
+.tp-app[data-theme="dark"] .tp-chart-card .tp-bar-stack,
+.tp-app[data-theme="dark"] .tp-chart-card .tp-key-purple,
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-info,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-info {
+  background-color: #72b9d6 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-chart-card .tp-bar-failure,
+.tp-app[data-theme="dark"] .tp-chart-card .tp-key-orange {
+  background-color: #f08a43 !important;
+}
+
+.tp-app[data-theme="dark"] .tp-sev-dot.sev-low,
+.tp-app[data-theme="dark"] .tp-sev-fill.sev-low {
+  background-color: #78a9d2 !important;
 }
