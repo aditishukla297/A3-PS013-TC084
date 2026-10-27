@@ -55,7 +55,11 @@ const fullDate = value => { const d = new Date(value); return value && !Number.i
 const unpack = data => Array.isArray(data) ? data : (data?.events || data?.timeline || data?.items || data?.data?.events || []);
 const csvValue = value => '"' + String(value ?? '').replaceAll('"', '""') + '"';
 const fail = e => /fail|denied|invalid|reject/i.test([eventType(e), message(e)].join(' '));
-const severityClass = value => `sev-${value.replace(/[^a-z]/g, '')}`;
+const severityClass = value => {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/[^a-z]/g, '');
+  const canonical = normalized === 'informational' ? 'info' : normalized === 'warn' ? 'warning' : normalized;
+  return `sev-${canonical || 'unknown'}`;
+};
 
 function TrendChart({ events }) {
   const buckets = useMemo(() => {
