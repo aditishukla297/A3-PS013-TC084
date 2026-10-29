@@ -148,8 +148,7 @@ def _store_log_batch(payload: LogBatch, raw_bytes: bytes):
     }
 
 
-@app.get("/api/v1/timeline")
-def get_timeline(
+def _get_timeline_uncached(
     severity: str | None = None,
     device_id: str | None = None,
     event_type: str | None = None,
@@ -226,6 +225,83 @@ def get_timeline(
     }
 
 
+
+
+# TRACEPOINT_TIMELINE_CACHE_V1
+# Cache parsed events while the evidence files and metadata remain unchanged.
+import threading as _timeline_threading
+
+_TIMELINE_CACHE_LOCK = _timeline_threading.RLock()
+_TIMELINE_CACHE_SIGNATURE = None
+_TIMELINE_CACHE_EVENTS = []
+
+
+def _timeline_evidence_signature():
+    if not EVIDENCE_DIR.exists():
+        return ()
+
+    signature = []
+
+    for evidence_path in sorted(EVIDENCE_DIR.glob("*/*.json")):
+        if evidence_path.name.endswith(".meta.json"):
+            continue
+
+        metadata_path = evidence_path.with_name(
+            evidence_path.stem + ".meta.json"
+        )
+
+        for candidate in (evidence_path, metadata_path):
+            try:
+                stat = candidate.stat()
+                signature.append((
+                    str(candidate),
+                    stat.st_ino,
+                    stat.st_size,
+                    stat.st_mtime_ns,
+                ))
+            except FileNotFoundError:
+                signature.append((str(candidate), None))
+            except OSError:
+                signature.append((str(candidate), "unavailable"))
+
+    return tuple(signature)
+
+
+@app.get("/api/v1/timeline")
+def get_timeline(
+    severity: str | None = None,
+    device_id: str | None = None,
+    event_type: str | None = None,
+    username: str | None = None,
+):
+    global _TIMELINE_CACHE_SIGNATURE, _TIMELINE_CACHE_EVENTS
+
+    signature = _timeline_evidence_signature()
+
+    with _TIMELINE_CACHE_LOCK:
+        if signature != _TIMELINE_CACHE_SIGNATURE:
+            data = _get_timeline_uncached()
+            _TIMELINE_CACHE_EVENTS = data.get("events", [])
+            _TIMELINE_CACHE_SIGNATURE = signature
+
+        # Copy event dictionaries so callers cannot mutate the cached records.
+        events = [dict(event) for event in _TIMELINE_CACHE_EVENTS]
+
+    if severity:
+        events = [event for event in events if event["severity"] == severity]
+
+    if device_id:
+        events = [event for event in events if event["device_id"] == device_id]
+
+    if event_type:
+        events = [event for event in events if event["event_type"] == event_type]
+
+    if username:
+        events = [event for event in events if event["username"] == username]
+
+    return {"total": len(events), "events": events}
+
+# END TRACEPOINT_TIMELINE_CACHE_V1
 # THREAD_AUTH_V1: local user authentication and timeline access control
 from fastapi.responses import JSONResponse as _ThreadJSONResponse
 from app.auth import router as _thread_auth_router, current_user as _thread_current_user
