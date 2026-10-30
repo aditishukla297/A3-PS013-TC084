@@ -219,7 +219,7 @@ export default function Dashboard({ user, onSignOut }) {
     </div>
 
     <aside className={`tp-sidebar ${mobileOpen ? 'tp-open' : ''}`}>
-      <div className="tp-brand"><img className="tp-brand-mark tp-brand-image" src="/tracepoint-detective-circle.png" alt="" aria-hidden="true" /><span className="tp-brand-word">tracepoint<span>.</span></span></div>
+      <div className="tp-brand"><img className="tp-brand-mark tp-brand-image" src="/tracepoint-detective-circle.png" alt="" aria-hidden="true" /><span className="tp-brand-word">Tracepoint<span>.</span></span></div>
       <div className="tp-workspace"><span className="tp-workspace-avatar">TP</span><div><strong>Security workspace</strong><small>Evidence & investigations</small></div></div>
       <div className="tp-nav-label">Workspace</div>
       <nav aria-label="Main navigation">{navigation.map(([id, label, Icon]) => <button key={id} className={`tp-nav-item ${page === id ? 'active' : ''}`} onClick={() => openPage(id)}><Icon size={18}/><span>{label}</span>{page === id && <ChevronRight size={15} className="tp-nav-chevron"/>}</button>)}</nav>
