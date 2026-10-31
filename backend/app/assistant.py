@@ -42,65 +42,52 @@ def event_reference(event):
         "event_type": event.get("event_type") or event.get("type") or "",
         "username": event.get("username") or "",
         "message": str(
-            event.get("message") or event.get("raw_line") or ""
+            event.get("message") or event.get("raw_line") or event.get("raw_log") or ""
         )[:100],
     }
 
 
-def get_linked_events(case_id):
-    """Resolve this case's saved references to actual timeline events."""
-    from app.main import get_timeline
+def get_linked_events(case_id, owner_user_id):
+    """Resolve saved references only against the case owner's evidence."""
+    from app.main import get_timeline_for_user
 
     db = connect()
     try:
         rows = db.execute(
-            """
-            SELECT event_reference
-            FROM investigation_events
-            WHERE investigation_id = ?
-            ORDER BY linked_at
-            """,
+            """SELECT event_reference FROM investigation_events
+               WHERE investigation_id = ? ORDER BY linked_at""",
             (case_id,),
         ).fetchall()
     finally:
         db.close()
-
     references = []
     for row in rows:
         try:
             references.append(json.loads(row["event_reference"]))
         except (json.JSONDecodeError, TypeError):
             continue
-
     if not references:
         return []
 
-    timeline = get_timeline()
+    timeline = get_timeline_for_user(owner_user_id)
     events = timeline.get("events", [])
-
-    # Only use events that match references saved in this investigation.
     matched = []
     seen = set()
-
     for event in events:
         actual_reference = event_reference(event)
-
         for reference in references:
             if reference == actual_reference:
                 key = (
-                    actual_reference["device_id"],
-                    actual_reference["batch_id"],
-                    actual_reference["timestamp"],
-                    actual_reference["event_type"],
-                    actual_reference["username"],
-                    actual_reference["message"],
+                    actual_reference["device_id"], actual_reference["batch_id"],
+                    actual_reference["timestamp"], actual_reference["event_type"],
+                    actual_reference["username"], actual_reference["message"],
                 )
                 if key not in seen:
                     matched.append(event)
                     seen.add(key)
                 break
-
     return matched
+
 
 
 
@@ -284,7 +271,7 @@ def ask_about_investigation(
     finally:
         db.close()
 
-    events = get_linked_events(case_id)
+    events = get_linked_events(case_id, user_id)
 
     if not events:
         return {

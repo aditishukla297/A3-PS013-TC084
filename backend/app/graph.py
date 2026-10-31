@@ -1,7 +1,7 @@
 """Deterministic, evidence-linked correlation for Tracepoint."""
 from datetime import datetime, timezone
 from collections import defaultdict
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 router = APIRouter(prefix='/api/v1/graph', tags=['investigation-graph'])
 FAILURES = {'failed_login', 'invalid_user', 'authentication_failure'}
@@ -70,8 +70,14 @@ def build_graph(events):
         'disclaimer': 'Correlations are investigative leads, not proof of compromise.',
     }
 
-@router.get('')
-def investigation_graph():
-    from app.main import get_timeline
-    timeline = get_timeline(severity=None, device_id=None, event_type=None, username=None)
-    return build_graph(timeline.get('events', []))
+@router.get("")
+def investigation_graph(request: Request):
+    from app.auth import current_user
+    from fastapi import HTTPException
+    from app.main import get_timeline_for_user
+
+    user = current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+    timeline = get_timeline_for_user(user["id"])
+    return build_graph(timeline.get("events", []))

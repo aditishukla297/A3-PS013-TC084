@@ -19,7 +19,7 @@ from reportlab.platypus import (
 )
 
 from app.auth import connect
-from app.investigations import current_user_id, get_owned_case
+from app.investigations import current_user_id, get_owned_case, filter_owned_event_rows
 
 router = APIRouter(
     prefix="/api/v1/investigations",
@@ -33,72 +33,42 @@ def safe(value):
     return escape(str(value if value is not None else "N/A"))
 
 
-def evidence_for_report(events):
-    """Collect and verify distinct evidence batches linked to a case."""
-    from app.main import verify_evidence
+def evidence_for_report(events, owner_user_id):
+    """Collect and verify only batches owned by the report's account."""
+    from app.main import _load_owned_evidence_metadata, verify_evidence_for_owner
 
     batches = {}
     safe_id = re.compile(r"^[A-Za-z0-9_-]+$")
-
     for item in events:
         try:
             event = json.loads(item["event_reference"])
         except (ValueError, TypeError):
             continue
-
         if not isinstance(event, dict):
             continue
-
         device_id = event.get("device_id")
         batch_id = event.get("batch_id")
-
-        if not isinstance(device_id, str) or not isinstance(batch_id, str):
+        if (not isinstance(device_id, str) or not isinstance(batch_id, str)
+                or not safe_id.fullmatch(device_id) or not safe_id.fullmatch(batch_id)):
             continue
-
-        if not safe_id.fullmatch(device_id) or not safe_id.fullmatch(batch_id):
-            continue
-
         batches[(device_id, batch_id)] = None
 
     results = []
-
     for device_id, batch_id in sorted(batches):
-        metadata_path = (
-            Path(__file__).resolve().parent.parent
-            / "data" / "evidence"
-            / device_id
-            / f"{batch_id}.meta.json"
-        )
-
-        metadata = {}
-        metadata_error = False
-
         try:
-            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-            if not isinstance(metadata, dict):
-                metadata = {}
-                metadata_error = True
-        except (OSError, ValueError):
-            metadata_error = True
-
-        if metadata_error:
-            verification = {
-                "status": "invalid_metadata",
-                "verified": False,
-            }
-        else:
-            try:
-                verification = verify_evidence(
-                    device_id=device_id,
-                    batch_id=batch_id,
-                )
-            except HTTPException as exc:
-                verification = {
-                    "status": "verification_error",
-                    "verified": False,
-                    "detail": exc.detail,
-                }
-
+            metadata = _load_owned_evidence_metadata(owner_user_id, device_id, batch_id)
+            verification = verify_evidence_for_owner(device_id, batch_id, owner_user_id)
+        except HTTPException:
+            # Do not reveal the other account's metadata or hash in this report.
+            results.append({
+                "device_id": device_id,
+                "batch_id": batch_id,
+                "sha256": None,
+                "received_at": None,
+                "line_count": None,
+                "status": "not_available_to_account",
+            })
+            continue
         results.append({
             "device_id": device_id,
             "batch_id": batch_id,
@@ -107,8 +77,8 @@ def evidence_for_report(events):
             "line_count": metadata.get("line_count"),
             "status": verification.get("status", "unknown"),
         })
-
     return results
+
 
 
 @router.get("/{case_id}/report")
@@ -134,7 +104,8 @@ def download_report(case_id: int, request: Request):
             ).fetchall()
         ]
 
-    evidence_batches = evidence_for_report(events)
+    events = filter_owned_event_rows(events, user_id)
+    evidence_batches = evidence_for_report(events, user_id)
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(

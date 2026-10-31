@@ -33,8 +33,15 @@ def connect():
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         expires_at TEXT NOT NULL
     )""")
+    # One active, high-entropy agent key per user. Only its SHA-256 digest is stored.
+    conn.execute("""CREATE TABLE IF NOT EXISTS agent_api_keys (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        token_hash TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL
+    )""")
     conn.commit()
     return conn
+
 
 
 def token_digest(token):
@@ -126,3 +133,57 @@ def logout(request: Request, response: Response):
             conn.commit()
     response.delete_cookie("thread_session", path="/", samesite="lax")
     return {"ok": True}
+
+# TRACEPOINT_ACCOUNT_EVIDENCE_OWNERSHIP_V1
+
+def user_for_agent_api_key(api_key: str | None):
+    """Resolve an agent credential to its server-owned account ID."""
+    if not api_key:
+        return None
+    digest = token_digest(api_key)
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT user_id FROM agent_api_keys WHERE token_hash=?",
+            (digest,),
+        ).fetchone()
+    return int(row["user_id"]) if row else None
+
+
+@router.post("/agent-key")
+def create_agent_api_key(request: Request):
+    """Create or rotate the signed-in user's agent key; show it only once."""
+    user = current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+
+    api_key = "tp_agent_" + secrets.token_urlsafe(40)
+    created_at = utc_now().isoformat()
+    with connect() as conn:
+        conn.execute(
+            """INSERT INTO agent_api_keys(user_id, token_hash, created_at)
+               VALUES (?, ?, ?)
+               ON CONFLICT(user_id) DO UPDATE SET
+                   token_hash=excluded.token_hash,
+                   created_at=excluded.created_at""",
+            (user["id"], token_digest(api_key), created_at),
+        )
+        conn.commit()
+    return {
+        "api_key": api_key,
+        "created_at": created_at,
+        "warning": "Copy this key now. It cannot be retrieved later; creating another key rotates it.",
+    }
+
+
+@router.delete("/agent-key")
+def revoke_agent_api_key(request: Request):
+    user = current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+    with connect() as conn:
+        cursor = conn.execute(
+            "DELETE FROM agent_api_keys WHERE user_id=?",
+            (user["id"],),
+        )
+        conn.commit()
+    return {"revoked": cursor.rowcount > 0}

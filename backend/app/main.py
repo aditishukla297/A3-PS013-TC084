@@ -1,4 +1,3 @@
-
 import hashlib
 import json
 import os
@@ -42,91 +41,86 @@ def health():
 @app.post("/api/v1/ingest", status_code=201)
 async def ingest_logs(
     request: Request,
-    x_api_key: str | None = Header(default=None)
+    x_api_key: str | None = Header(default=None),
 ):
-    expected_key = os.getenv("AGENT_API_KEY")
+    # The API credential is mapped to an account in SQLite. No owner ID from
+    # the request body or environment is trusted.
+    from app.auth import user_for_agent_api_key
 
-    if not expected_key:
-        raise HTTPException(
-            status_code=503,
-            detail="Agent authentication is not configured"
-        )
+    owner_user_id = user_for_agent_api_key(x_api_key)
+    if owner_user_id is None:
+        raise HTTPException(status_code=401, detail="Invalid or revoked agent API key")
 
-    if not x_api_key or not secrets.compare_digest(
-        x_api_key, expected_key
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid API key"
-        )
-
-    # Read with an explicit size limit.
     chunks = []
     total = 0
-
     async for chunk in request.stream():
         total += len(chunk)
-
         if total > MAX_BATCH_BYTES:
-            raise HTTPException(
-                status_code=413,
-                detail="Batch exceeds 1 MiB"
-            )
-
+            raise HTTPException(status_code=413, detail="Batch exceeds 1 MiB")
         chunks.append(chunk)
-
     raw_bytes = b"".join(chunks)
 
     try:
         payload = LogBatch.model_validate_json(raw_bytes)
     except (ValidationError, ValueError):
-        raise HTTPException(
-            status_code=422,
-            detail="Invalid log batch"
-        )
+        raise HTTPException(status_code=422, detail="Invalid log batch")
 
-    return _store_log_batch(payload, raw_bytes)
+    return _store_log_batch(payload, raw_bytes, owner_user_id=owner_user_id)
 
-def _store_log_batch(payload: LogBatch, raw_bytes: bytes):
+
+def _store_log_batch(payload: LogBatch, raw_bytes: bytes, owner_user_id: int):
     from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    if not isinstance(owner_user_id, int) or owner_user_id <= 0:
+        raise HTTPException(status_code=401, detail="Evidence owner could not be resolved")
     try:
         ZoneInfo(payload.source_timezone)
     except (ZoneInfoNotFoundError, ValueError, KeyError):
         raise HTTPException(status_code=422, detail="Invalid source timezone")
+
     sha256 = hashlib.sha256(raw_bytes).hexdigest()
 
-    # One directory per registered source.
-    device_dir = EVIDENCE_DIR / payload.device_id
+    # New records live under users/<user_id>/<device_id>. Legacy evidence in
+    # the old top-level device folders is deliberately left untouched.
+    device_dir = EVIDENCE_DIR / "users" / str(owner_user_id) / payload.device_id
     device_dir.mkdir(parents=True, exist_ok=True)
-
     batch_name = str(payload.batch_id)
     evidence_path = device_dir / f"{batch_name}.json"
     metadata_path = device_dir / f"{batch_name}.meta.json"
 
-    # Exclusive creation prevents overwriting existing evidence.
     try:
         with evidence_path.open("xb") as file:
             file.write(raw_bytes)
             file.flush()
             os.fsync(file.fileno())
     except FileExistsError:
-        existing_hash = hashlib.sha256(
-            evidence_path.read_bytes()
-        ).hexdigest()
-
+        existing_hash = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
         if existing_hash != sha256:
             raise HTTPException(
                 status_code=409,
-                detail="Batch ID already exists with different content"
+                detail="Batch ID already exists with different content",
             )
+        try:
+            existing_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            raise HTTPException(
+                status_code=409,
+                detail="Existing evidence has no readable ownership metadata and cannot be claimed automatically",
+            )
+        if (
+            not isinstance(existing_metadata, dict)
+            or existing_metadata.get("owner_user_id") != owner_user_id
+        ):
+            raise HTTPException(status_code=404, detail="Evidence not found")
 
         return {
             "status": "duplicate",
             "batch_id": batch_name,
-            "sha256": sha256
+            "sha256": sha256,
         }
 
     metadata = {
+        "owner_user_id": owner_user_id,
         "device_id": payload.device_id,
         "batch_id": batch_name,
         "log_type": payload.log_type,
@@ -134,50 +128,46 @@ def _store_log_batch(payload: LogBatch, raw_bytes: bytes):
         "line_count": len(payload.lines),
         "sha256": sha256,
         "received_at": datetime.now(timezone.utc).isoformat(),
-        "evidence_file": evidence_path.name
+        "evidence_file": evidence_path.name,
     }
-
     with metadata_path.open("x", encoding="utf-8") as file:
         json.dump(metadata, file, indent=2)
         file.flush()
         os.fsync(file.fileno())
 
-    return {
-        "status": "accepted",
-        **metadata
-    }
+    return {"status": "accepted", **metadata}
 
 
 def _get_timeline_uncached(
+    owner_user_id: int,
     severity: str | None = None,
     device_id: str | None = None,
     event_type: str | None = None,
     username: str | None = None,
 ):
     events = []
-
-    if not EVIDENCE_DIR.exists():
+    owner_root = EVIDENCE_DIR / "users" / str(owner_user_id)
+    if not owner_root.exists():
         return {"total": 0, "events": []}
 
-    for evidence_path in EVIDENCE_DIR.glob("*/*.json"):
+    for evidence_path in owner_root.glob("*/*.json"):
         if evidence_path.name.endswith(".meta.json"):
             continue
-
         try:
-            with evidence_path.open("r", encoding="utf-8") as file:
-                batch = json.load(file)
-
             metadata_path = evidence_path.with_name(
                 evidence_path.stem + ".meta.json"
             )
-
-            received_at = None
-            source_timezone = batch.get("source_timezone", "Asia/Kolkata")
-            if metadata_path.exists():
-                metadata = json.loads(metadata_path.read_text())
-                received_at = metadata.get("received_at")
-                source_timezone = metadata.get("source_timezone", source_timezone)
-
+            if not metadata_path.is_file():
+                continue
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if not isinstance(metadata, dict) or metadata.get("owner_user_id") != owner_user_id:
+                continue
+            with evidence_path.open("r", encoding="utf-8") as file:
+                batch = json.load(file)
+            received_at = metadata.get("received_at")
+            source_timezone = metadata.get(
+                "source_timezone", batch.get("source_timezone", "Asia/Kolkata")
+            )
             for line_number, line in enumerate(batch["lines"], start=1):
                 event = parse_log(
                     line=line,
@@ -187,44 +177,28 @@ def _get_timeline_uncached(
                     received_at=received_at,
                     source_timezone=source_timezone,
                 )
-
                 event["line_number"] = line_number
                 events.append(event)
-
         except Exception as error:
             print(f"ERROR reading {evidence_path}: {type(error).__name__}: {error}")
             continue
 
-    
-    
     events.sort(key=lambda event: (
         event["timestamp"] is None,
         datetime.fromisoformat(event.get("timestamp_utc") or event["timestamp"]).astimezone(
             timezone.utc
-        ) if event["timestamp"] else datetime.max.replace(
-            tzinfo=timezone.utc
-        )
+        ) if event["timestamp"] else datetime.max.replace(tzinfo=timezone.utc)
     ))
-
 
     if severity:
         events = [e for e in events if e["severity"] == severity]
-
     if device_id:
         events = [e for e in events if e["device_id"] == device_id]
-
     if event_type:
         events = [e for e in events if e["event_type"] == event_type]
-
     if username:
         events = [e for e in events if e["username"] == username]
-
-    return {
-        "total": len(events),
-        "events": events
-    }
-
-
+    return {"total": len(events), "events": events}
 
 
 # TRACEPOINT_TIMELINE_CACHE_V1
@@ -236,70 +210,80 @@ _TIMELINE_CACHE_SIGNATURE = None
 _TIMELINE_CACHE_EVENTS = []
 
 
-def _timeline_evidence_signature():
-    if not EVIDENCE_DIR.exists():
+def _timeline_evidence_signature(owner_user_id: int):
+    """Signature only the current user's evidence tree for cache isolation."""
+    owner_root = EVIDENCE_DIR / "users" / str(owner_user_id)
+    if not owner_root.exists():
         return ()
-
     signature = []
-
-    for evidence_path in sorted(EVIDENCE_DIR.glob("*/*.json")):
+    for evidence_path in sorted(owner_root.glob("*/*.json")):
         if evidence_path.name.endswith(".meta.json"):
             continue
-
         metadata_path = evidence_path.with_name(
             evidence_path.stem + ".meta.json"
         )
-
         for candidate in (evidence_path, metadata_path):
             try:
                 stat = candidate.stat()
                 signature.append((
-                    str(candidate),
-                    stat.st_ino,
-                    stat.st_size,
-                    stat.st_mtime_ns,
+                    str(candidate), stat.st_ino, stat.st_size, stat.st_mtime_ns,
                 ))
             except FileNotFoundError:
                 signature.append((str(candidate), None))
             except OSError:
                 signature.append((str(candidate), "unavailable"))
-
     return tuple(signature)
 
 
-@app.get("/api/v1/timeline")
-def get_timeline(
+def get_timeline_for_user(
+    owner_user_id: int,
     severity: str | None = None,
     device_id: str | None = None,
     event_type: str | None = None,
     username: str | None = None,
 ):
+    """Internal timeline query that always requires an explicit account ID."""
     global _TIMELINE_CACHE_SIGNATURE, _TIMELINE_CACHE_EVENTS
+    if not isinstance(owner_user_id, int) or owner_user_id <= 0:
+        raise HTTPException(status_code=401, detail="Sign in required")
 
-    signature = _timeline_evidence_signature()
-
+    # Include the account ID in the cache key. A request by another account
+    # can never receive the previous account's cached event list.
+    signature = (owner_user_id, _timeline_evidence_signature(owner_user_id))
     with _TIMELINE_CACHE_LOCK:
         if signature != _TIMELINE_CACHE_SIGNATURE:
-            data = _get_timeline_uncached()
+            data = _get_timeline_uncached(owner_user_id)
             _TIMELINE_CACHE_EVENTS = data.get("events", [])
             _TIMELINE_CACHE_SIGNATURE = signature
-
-        # Copy event dictionaries so callers cannot mutate the cached records.
         events = [dict(event) for event in _TIMELINE_CACHE_EVENTS]
 
     if severity:
         events = [event for event in events if event["severity"] == severity]
-
     if device_id:
         events = [event for event in events if event["device_id"] == device_id]
-
     if event_type:
         events = [event for event in events if event["event_type"] == event_type]
-
     if username:
         events = [event for event in events if event["username"] == username]
-
     return {"total": len(events), "events": events}
+
+
+@app.get("/api/v1/timeline")
+def get_timeline(
+    request: Request,
+    severity: str | None = None,
+    device_id: str | None = None,
+    event_type: str | None = None,
+    username: str | None = None,
+):
+    user = _thread_current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+    return get_timeline_for_user(
+        user["id"], severity=severity, device_id=device_id,
+        event_type=event_type, username=username,
+    )
+
 
 # END TRACEPOINT_TIMELINE_CACHE_V1
 # THREAD_AUTH_V1: local user authentication and timeline access control
@@ -435,8 +419,10 @@ DEMO_SCENARIOS = {
     },
 }
 
+
 class DemoIngestRequest(BaseModel):
     scenario: str
+
 
 @app.get("/api/v1/demo/scenarios")
 def demo_scenarios():
@@ -446,9 +432,14 @@ def demo_scenarios():
         for key, value in DEMO_SCENARIOS.items()
     ]}
 
+
 @app.post("/api/v1/demo/ingest", status_code=201)
 def demo_ingest(request: Request, selection: DemoIngestRequest):
-    # Browser-only JSON + a custom header; authentication is also enforced by middleware.
+    # Demo evidence is owned by the authenticated account, never by a
+    # client-supplied owner field.
+    user = _thread_current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
     if request.headers.get("X-Tracepoint-Demo") != "1":
         raise HTTPException(status_code=400, detail="Missing demo request header")
     scenario = DEMO_SCENARIOS.get(selection.scenario)
@@ -462,7 +453,7 @@ def demo_ingest(request: Request, selection: DemoIngestRequest):
         "lines": scenario["lines"],
     }, ensure_ascii=False).encode("utf-8")
     payload = LogBatch.model_validate_json(payload_bytes)
-    stored = _store_log_batch(payload, payload_bytes)
+    stored = _store_log_batch(payload, payload_bytes, owner_user_id=user["id"])
     events = []
     for index, line in enumerate(payload.lines, start=1):
         event = parse_log(
@@ -473,35 +464,41 @@ def demo_ingest(request: Request, selection: DemoIngestRequest):
         event["line_number"] = index
         events.append(event)
     return {**stored, "events": events, "demo": True}
+
+
 # END TRACEPOINT_DEMO_LAB_V1
 
 
 @app.middleware("http")
 async def _thread_require_login(request, call_next):
     if request.url.path.startswith((
-    "/api/v1/timeline",
-    "/api/v1/demo",
-    "/api/v1/evidence",
-    "/api/v1/investigations",
-    "/api/v1/graph",
-)):
+        "/api/v1/timeline",
+        "/api/v1/demo",
+        "/api/v1/evidence",
+        "/api/v1/investigations",
+        "/api/v1/graph",
+    )):
         if _thread_current_user(request) is None:
             return _ThreadJSONResponse({"detail": "Sign in required"}, status_code=401)
     return await call_next(request)
 
-@app.get("/api/v1/evidence")
-def list_evidence():
-    """List stored evidence batches and their recorded metadata."""
-    batches = []
 
-    if not EVIDENCE_DIR.exists():
+@app.get("/api/v1/evidence")
+def list_evidence(request: Request):
+    """List only evidence stored in the signed-in user's evidence tree."""
+    user = _thread_current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+    batches = []
+    owner_root = EVIDENCE_DIR / "users" / str(user["id"])
+    if not owner_root.exists():
         return {"items": [], "total": 0}
 
-    for metadata_path in EVIDENCE_DIR.glob("*/*.meta.json"):
+    for metadata_path in owner_root.glob("*/*.meta.json"):
         try:
-            with metadata_path.open("r", encoding="utf-8") as file:
-                metadata = json.load(file)
-
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if not isinstance(metadata, dict) or metadata.get("owner_user_id") != user["id"]:
+                continue
             batches.append({
                 "device_id": metadata.get("device_id"),
                 "batch_id": metadata.get("batch_id"),
@@ -512,69 +509,61 @@ def list_evidence():
                 "received_at": metadata.get("received_at"),
                 "evidence_file": metadata.get("evidence_file"),
             })
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, TypeError) as error:
             print(f"ERROR reading metadata {metadata_path}: {error}")
-
-    batches.sort(
-        key=lambda item: item.get("received_at") or "",
-        reverse=True
-    )
-
+    batches.sort(key=lambda item: item.get("received_at") or "", reverse=True)
     return {"items": batches, "total": len(batches)}
 
 
-@app.post("/api/v1/evidence/{device_id}/{batch_id}/verify")
-def verify_evidence(device_id: str, batch_id: str):
-    """Recalculate the stored evidence hash and compare it with metadata."""
+def _owned_evidence_paths(owner_user_id: int, device_id: str, batch_id: str):
     import re
-    import hmac
-
-    # Prevent path traversal through URL parameters.
+    if not isinstance(owner_user_id, int) or owner_user_id <= 0:
+        raise HTTPException(status_code=401, detail="Sign in required")
     safe_id = re.compile(r"^[A-Za-z0-9_-]+$")
-
     if not safe_id.fullmatch(device_id) or not safe_id.fullmatch(batch_id):
         raise HTTPException(status_code=400, detail="Invalid evidence identifier")
+    device_dir = EVIDENCE_DIR / "users" / str(owner_user_id) / device_id
+    return device_dir / f"{batch_id}.json", device_dir / f"{batch_id}.meta.json"
 
-    device_dir = EVIDENCE_DIR / device_id
-    evidence_path = device_dir / f"{batch_id}.json"
-    metadata_path = device_dir / f"{batch_id}.meta.json"
 
+def _load_owned_evidence_metadata(owner_user_id: int, device_id: str, batch_id: str):
+    _, metadata_path = _owned_evidence_paths(owner_user_id, device_id, batch_id)
     if not metadata_path.is_file():
-        raise HTTPException(status_code=404, detail="Evidence metadata not found")
-
+        raise HTTPException(status_code=404, detail="Evidence not found")
     try:
-        with metadata_path.open("r", encoding="utf-8") as file:
-            metadata = json.load(file)
-    except (OSError, ValueError):
-        raise HTTPException(status_code=500, detail="Could not read evidence metadata")
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        raise HTTPException(status_code=422, detail="Unreadable evidence metadata")
+    if not isinstance(metadata, dict) or metadata.get("owner_user_id") != owner_user_id:
+        # Do not disclose whether another account owns the requested batch.
+        raise HTTPException(status_code=404, detail="Evidence not found")
+    return metadata
 
+
+def verify_evidence_for_owner(device_id: str, batch_id: str, owner_user_id: int):
+    """Verify hash only after confirming the evidence belongs to this account."""
+    import hmac
+    evidence_path, _ = _owned_evidence_paths(owner_user_id, device_id, batch_id)
+    metadata = _load_owned_evidence_metadata(owner_user_id, device_id, batch_id)
     if not evidence_path.is_file():
         return {
-            "status": "missing",
-            "verified": False,
-            "device_id": device_id,
-            "batch_id": batch_id,
-            "detail": "Original evidence file is missing"
+            "status": "missing", "verified": False,
+            "device_id": device_id, "batch_id": batch_id,
+            "detail": "Original evidence file is missing",
         }
-
     expected_hash = metadata.get("sha256")
-
+    import re
     if not isinstance(expected_hash, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", expected_hash):
         return {
-            "status": "invalid_metadata",
-            "verified": False,
-            "device_id": device_id,
-            "batch_id": batch_id,
-            "detail": "Recorded SHA-256 hash is missing or invalid"
+            "status": "invalid_metadata", "verified": False,
+            "device_id": device_id, "batch_id": batch_id,
+            "detail": "Recorded SHA-256 hash is missing or invalid",
         }
-
     try:
         actual_hash = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
     except OSError:
         raise HTTPException(status_code=500, detail="Could not read evidence file")
-
     verified = hmac.compare_digest(actual_hash, expected_hash.lower())
-
     return {
         "status": "verified" if verified else "mismatch",
         "verified": verified,
@@ -582,8 +571,16 @@ def verify_evidence(device_id: str, batch_id: str):
         "batch_id": batch_id,
         "expected_sha256": expected_hash,
         "actual_sha256": actual_hash,
-        "verified_at": datetime.now(timezone.utc).isoformat()
+        "verified_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@app.post("/api/v1/evidence/{device_id}/{batch_id}/verify")
+def verify_evidence(device_id: str, batch_id: str, request: Request):
+    user = _thread_current_user(request)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+    return verify_evidence_for_owner(device_id, batch_id, user["id"])
 
 
 # TRACEPOINT_GRAPH_V1

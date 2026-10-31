@@ -142,79 +142,36 @@ def create_investigation(
         return get_owned_case(db, cursor.lastrowid, user_id)
 
 
-def validate_event_reference(reference: str):
-    """Require an exact match with a currently stored timeline event."""
+def validate_event_reference(reference: str, owner_user_id: int):
+    """Require an exact match against this account's collected timeline."""
     try:
         supplied = json.loads(reference)
     except (json.JSONDecodeError, TypeError):
-        raise HTTPException(
-            status_code=422,
-            detail="Event reference must be valid JSON"
-        )
-
+        raise HTTPException(status_code=422, detail="Event reference must be valid JSON")
     if not isinstance(supplied, dict):
-        raise HTTPException(
-            status_code=422,
-            detail="Event reference must be a JSON object"
-        )
-
-    fields = (
-        "device_id",
-        "batch_id",
-        "timestamp",
-        "event_type",
-        "username",
-        "message",
-    )
-
+        raise HTTPException(status_code=422, detail="Event reference must be a JSON object")
+    fields = ("device_id", "batch_id", "timestamp", "event_type", "username", "message")
     if set(supplied) != set(fields):
-        raise HTTPException(
-            status_code=422,
-            detail="Invalid event reference fields"
-        )
+        raise HTTPException(status_code=422, detail="Invalid event reference fields")
 
-    from app.main import get_timeline
-
-    timeline = get_timeline(
-        severity=None,
-        device_id=None,
-        event_type=None,
-        username=None,
-    )
-
-    events = timeline.get("events", [])
-
-    for event in events:
+    from app.main import get_timeline_for_user
+    timeline = get_timeline_for_user(owner_user_id)
+    for event in timeline.get("events", []):
         expected = {
             "device_id": event.get("device_id") or "",
             "batch_id": event.get("batch_id") or "",
-            "timestamp": (
-                event.get("timestamp")
-                or event.get("event_timestamp")
-                or event.get("received_at")
-                or ""
-            ),
-            "event_type": (
-                event.get("event_type")
-                or event.get("type")
-                or ""
-            ),
+            "timestamp": event.get("timestamp") or event.get("event_timestamp") or event.get("received_at") or "",
+            "event_type": event.get("event_type") or event.get("type") or "",
             "username": event.get("username") or "",
-            "message": str(
-                event.get("message")
-                or event.get("raw_line")
-                or event.get("raw_log")
-                or ""
-            )[:100],
+            "message": str(event.get("message") or event.get("raw_line") or event.get("raw_log") or "")[:100],
         }
-
         if supplied == expected:
             return
-
     raise HTTPException(
         status_code=422,
-        detail="Event reference does not match any collected timeline event"
+        detail="Event reference does not match any evidence collected by this account",
     )
+
 
 
 
@@ -225,7 +182,7 @@ def link_event(case_id: int, payload: LinkEvent, request: Request):
     with connect() as db:
         get_owned_case(db, case_id, user_id)
 
-        validate_event_reference(payload.event_reference)
+        validate_event_reference(payload.event_reference, user_id)
 
         timestamp = now()
 
@@ -260,17 +217,14 @@ def link_event(case_id: int, payload: LinkEvent, request: Request):
 @router.get("/{case_id}")
 def get_investigation(case_id: int, request: Request):
     user_id = current_user_id(request)
-
     with connect() as db:
         result = get_owned_case(db, case_id, user_id)
-
-        result["events"] = [
+        event_rows = [
             dict(row) for row in db.execute(
                 "SELECT * FROM investigation_events WHERE investigation_id=?",
                 (case_id,),
             ).fetchall()
         ]
-
         result["notes"] = [
             dict(row) for row in db.execute(
                 "SELECT * FROM investigation_notes WHERE investigation_id=? "
@@ -279,7 +233,11 @@ def get_investigation(case_id: int, request: Request):
             ).fetchall()
         ]
 
+    # Older cases may contain references created while the timeline was shared.
+    # Keep those database rows intact, but never return unresolved foreign refs.
+    result["events"] = filter_owned_event_rows(event_rows, user_id)
     return result
+
 
 
 @router.patch("/{case_id}")
@@ -331,3 +289,42 @@ def add_note(case_id: int, payload: AddNote, request: Request):
 
 
 initialize()
+
+# TRACEPOINT_LEGACY_EVENT_REFERENCE_FILTER_V1
+def filter_owned_event_rows(rows, owner_user_id):
+    """Hide stale/legacy linked events that are not in this account's timeline.
+
+    Existing investigation rows are preserved in SQLite. This is a response-time
+    filter: only references that resolve against the current owner's evidence are
+    returned to the UI or included in a generated report.
+    """
+    from app.main import get_timeline_for_user
+
+    fields = ("device_id", "batch_id", "timestamp", "event_type", "username", "message")
+    timeline = get_timeline_for_user(owner_user_id)
+    allowed = set()
+    for event in timeline.get("events", []):
+        reference = {
+            "device_id": event.get("device_id") or "",
+            "batch_id": event.get("batch_id") or "",
+            "timestamp": (event.get("timestamp") or event.get("event_timestamp")
+                          or event.get("received_at") or ""),
+            "event_type": event.get("event_type") or event.get("type") or "",
+            "username": event.get("username") or "",
+            "message": str(event.get("message") or event.get("raw_line")
+                           or event.get("raw_log") or "")[:100],
+        }
+        allowed.add(json.dumps(reference, sort_keys=True, ensure_ascii=False))
+
+    visible = []
+    for row in rows:
+        try:
+            reference = json.loads(row["event_reference"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not isinstance(reference, dict) or set(reference) != set(fields):
+            continue
+        key = json.dumps(reference, sort_keys=True, ensure_ascii=False)
+        if key in allowed:
+            visible.append(dict(row))
+    return visible

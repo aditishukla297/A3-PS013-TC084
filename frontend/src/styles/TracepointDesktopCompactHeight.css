@@ -103,3 +103,103 @@
     padding-top: 3px !important;
   }
 }
+
+
+/* TRACEPOINT_MOBILE_THEME_OVERLAP_FIX */
+@media (max-width: 600px) {
+  .tp-app .tp-nav-theme-toggle,
+  .tp-app .tp-sidebar .tp-theme-toggle {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    flex-shrink: 0 !important;
+  }
+
+  .tp-app .tp-sidebar .tp-brand {
+    position: relative !important;
+    margin-bottom: 8px !important;
+  }
+
+  .tp-app .tp-sidebar .tp-workspace {
+    position: relative !important;
+    margin-top: 10px !important;
+  }
+}
+
+
+/* TRACEPOINT_IPHONE_HEADER_FLOW_FIX */
+@media (max-width: 600px) {
+  /* Keep the brand and account controls in the first row,
+     with navigation in its own second row. */
+  .tp-app .tp-sidebar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: "brand account" "navigation navigation" !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+  }
+
+  /* Prevent unassigned sidebar children from entering the grid. */
+  .tp-app .tp-sidebar > .tp-workspace,
+  .tp-app .tp-sidebar > .tp-nav-label {
+    display: none !important;
+  }
+
+  .tp-app .tp-sidebar > .tp-brand {
+    grid-area: brand !important;
+    position: static !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .tp-app .tp-sidebar > nav {
+    grid-area: navigation !important;
+    min-width: 0 !important;
+  }
+
+  .tp-app .tp-sidebar > .tp-sidebar-bottom {
+    grid-area: account !important;
+    position: static !important;
+    justify-self: end !important;
+    align-self: center !important;
+    min-width: 0 !important;
+  }
+
+  /* Correctly target the separate dark-mode button in the page header. */
+  .tp-app .tp-content .tp-page-header {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .tp-app .tp-content .tp-page-header > div:first-child {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .tp-app .tp-content .tp-page-header .tp-actions {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    display: flex !important;
+    flex-flow: row wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .tp-app .tp-content .tp-page-header .tp-theme-toggle {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    flex: 0 0 auto !important;
+    align-self: flex-start !important;
+    margin: 0 !important;
+  }
+}
