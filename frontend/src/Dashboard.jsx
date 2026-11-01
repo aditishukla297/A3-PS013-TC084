@@ -50,8 +50,8 @@ const eventType = e => text(e.event_type || e.type || e.action || 'Event').repla
 const severity = e => text(e.severity || e.level || 'unknown').toLowerCase();
 const device = e => text(e.device_id || e.hostname || e.device || e.host);
 const message = e => text(e.message || e.raw_line || e.raw || e.description || e.details || eventType(e));
-const dateLabel = value => { const d = new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : text(value); };
-const fullDate = value => { const d = new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleString() : text(value); };
+const dateLabel = value => { const d = new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : text(value); };
+const fullDate = value => { const d = new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', timeZoneName: 'short' }) : text(value); };
 const unpack = data => Array.isArray(data) ? data : (data?.events || data?.timeline || data?.items || data?.data?.events || []);
 const csvValue = value => '"' + String(value ?? '').replaceAll('"', '""') + '"';
 const fail = e => /fail|denied|invalid|reject/i.test([eventType(e), message(e)].join(' '));
@@ -61,18 +61,21 @@ const severityClass = value => {
   return `sev-${canonical || 'unknown'}`;
 };
 
+// Rolling window ending today. Demo fixtures are dated on ingest, so recent
+// evidence lands inside it; widen CHART_DAYS to look further back.
+const CHART_DAYS = 7;
 function TrendChart({ events }) {
   const buckets = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    return Array.from({ length: 7 }, (_, index) => {
-      const day = new Date(today); day.setDate(today.getDate() - (6 - index));
+    return Array.from({ length: CHART_DAYS }, (_, index) => {
+      const day = new Date(today); day.setDate(today.getDate() - (CHART_DAYS - 1 - index));
       const next = new Date(day); next.setDate(day.getDate() + 1);
       const current = events.filter(e => { const time = Date.parse(timestamp(e)); return time >= day.getTime() && time < next.getTime(); });
-      return { label: day.toLocaleDateString(undefined, { weekday: 'short' }), total: current.length, failures: current.filter(fail).length };
+      return { label: day.toLocaleDateString(undefined, { weekday: 'short' }), title: day.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }), total: current.length, failures: current.filter(fail).length };
     });
   }, [events]);
   const max = Math.max(1, ...buckets.map(b => b.total));
-  return <section className="tp-card tp-chart-card"><div className="tp-card-head"><div><h2>Event activity</h2><p>Collected events over the last 7 days</p></div><span className="tp-period">Last 7 days</span></div><div className="tp-chart"><div className="tp-chart-lines"><span>{max}</span><span>{Math.round(max / 2)}</span><span>0</span></div><div className="tp-bars">{buckets.map((b, i) => <div className="tp-bar-column" key={i}><div className="tp-bar-track"><div className="tp-bar-stack" data-tooltip={`${b.label} · Other events: ${Math.max(0, b.total - b.failures)}`} style={{ height: `${b.total ? Math.max(5, b.total / max * 100) : 0}%` }}><div className="tp-bar-failure" data-tooltip={`${b.label} · Authentication failures: ${b.failures}`} style={{ height: `${b.total ? b.failures / b.total * 100 : 0}%` }} /></div></div><span>{b.label}</span></div>)}</div></div><div className="tp-legend"><span><i className="tp-key-purple"/> Other events</span><span><i className="tp-key-orange"/> Authentication failures</span></div></section>;
+  return <section className="tp-card tp-chart-card"><div className="tp-card-head"><div><h2>Event activity</h2><p>Collected events over the last {CHART_DAYS} days</p></div><span className="tp-period">Last {CHART_DAYS} days</span></div><div className="tp-chart"><div className="tp-chart-lines"><span>{max}</span><span>{Math.round(max / 2)}</span><span>0</span></div><div className="tp-bars">{buckets.map((b, i) => <div className="tp-bar-column" key={i}><div className="tp-bar-track"><div className="tp-bar-stack" data-tooltip={`${b.title} \u00b7 Other events: ${Math.max(0, b.total - b.failures)}`} style={{ height: `${b.total ? Math.max(5, b.total / max * 100) : 0}%` }}><div className="tp-bar-failure" data-tooltip={`${b.title} \u00b7 Authentication failures: ${b.failures}`} style={{ height: `${b.total ? b.failures / b.total * 100 : 0}%` }} /></div></div><span>{b.label}</span></div>)}</div></div><div className="tp-legend"><span><i className="tp-key-purple"/> Other events</span><span><i className="tp-key-orange"/> Authentication failures</span></div></section>;
 }
 function SeverityCard({ events }) {
   const groups = ['critical', 'high', 'medium', 'warning', 'low', 'info', 'unknown'];
@@ -94,7 +97,7 @@ const eventDateParts = value => {
   if (!value || Number.isNaN(d.getTime())) return { date: text(value), time: '' };
   return {
     date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
-    time: d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
   };
 };
 function EventTable({ rows, loading, onSelect }) {
@@ -241,7 +244,7 @@ export default function Dashboard({ user, onSignOut }) {
         >
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-      </div><div className="tp-profile"><span className="tp-profile-avatar">{(user?.name || 'U')[0].toUpperCase()}</span><div><strong>{user?.name || 'Account'}</strong><small>{user?.email || ''}</small></div></div><button className="tp-signout" onClick={onSignOut}><LogOut size={17}/> Sign out</button></div>
+      </div><div className="tp-profile"><span className="tp-profile-avatar">{(user?.name || 'U')[0].toUpperCase()}</span><div><strong>{user?.name || 'Account'}</strong><small>{user?.email || ''}</small></div></div><button className="tp-signout" onClick={onSignOut} aria-label="Sign out" title="Sign out"><LogOut size={17}/> <span className="tp-signout-label">Sign out</span></button></div>
     </aside>
     <main className="tp-main">
     {/* TRACEPOINT_SINGLE_NAV_V1: status and account live in primary navigation */}

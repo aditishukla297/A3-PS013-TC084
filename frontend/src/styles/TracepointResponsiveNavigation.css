@@ -215,10 +215,39 @@
 
 /* TRACEPOINT_IPHONE_NAV_WIDTH_FIX */
 @media (max-width: 600px) {
-  /* Remove duplicate account controls from the compact header row. */
-  .tp-app .tp-sidebar-bottom > .tp-profile,
-  .tp-app .tp-sidebar-bottom > .tp-signout {
+  /* The name and email block is redundant next to the avatar, so drop it. */
+  .tp-app .tp-sidebar-bottom > .tp-profile {
     display: none !important;
+  }
+
+  /* Sign out is the only one of its kind in the page, so a phone has no other
+     way out if this is hidden. Keep it, shrunk to its icon and sized to match
+     the theme toggle beside it. */
+  .tp-app .tp-sidebar-bottom > .tp-signout {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .tp-app .tp-sidebar-bottom > .tp-signout .tp-signout-label {
+    display: none !important;
+  }
+
+  /* The tagline is set to nowrap, so it slid under the controls once sign out
+     rejoined the row. Let the brand block shrink and the tagline wrap. */
+  .tp-app .tp-brand {
+    min-width: 0 !important;
+  }
+
+  .tp-app .tp-brand-word::after {
+    white-space: normal !important;
   }
 
   /* Give the brand and the remaining controls room to fit. */

@@ -419,6 +419,109 @@ DEMO_SCENARIOS = {
     },
 }
 
+# TRACEPOINT_DEMO_DATES_V1
+# Demo scenarios are fixtures, not captured evidence. The timestamps written
+# above are only a reference point: every ingest shifts the whole scenario
+# forward so its newest line sits at the current moment. The gaps between lines
+# and each line's UTC offset are preserved, so a burst still reads as a burst
+# and the cross-timezone scenarios still resolve to one shared instant.
+# Lines arriving from a real agent are never rewritten; only these fixtures are.
+import re as _demo_re
+from zoneinfo import ZoneInfo as _DemoZoneInfo, ZoneInfoNotFoundError as _DemoZoneInfoError
+
+# The year the fixture lines above were written in. Syslog lines carry no year,
+# so they need one to sit on the same scale as the ISO lines in a scenario.
+DEMO_FIXTURE_YEAR = 2026
+
+_DEMO_MACOS = _demo_re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+[+-]\d{4}")
+_DEMO_ISO = _demo_re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})")
+_DEMO_SYSLOG = _demo_re.compile(r"^[A-Z][a-z]{2} +\d{1,2} \d{2}:\d{2}:\d{2}")
+_DEMO_SYSLOG_DATE = _demo_re.compile(r"^[A-Z][a-z]{2} +\d{1,2}")
+
+
+def _demo_timezone(name):
+    try:
+        return _DemoZoneInfo(name)
+    except (_DemoZoneInfoError, ValueError, KeyError):
+        return timezone.utc
+
+
+def _demo_fixture_instants(line, tz):
+    """Every timestamp in a fixture line, as (match, instant) pairs."""
+    readers = (
+        (_DEMO_MACOS, lambda text: datetime.fromisoformat(text.replace(" ", "T", 1))),
+        (_DEMO_ISO, lambda text: datetime.fromisoformat(text.replace("Z", "+00:00"))),
+        (_DEMO_SYSLOG, lambda text: datetime.strptime(text, "%b %d %H:%M:%S").replace(
+            year=DEMO_FIXTURE_YEAR, tzinfo=tz
+        )),
+    )
+
+    found = []
+
+    for pattern, read in readers:
+        for match in pattern.finditer(line):
+            try:
+                found.append((match, read(match.group(0))))
+            except ValueError:
+                continue
+
+    return found
+
+
+def _format_demo_timestamp(original, moment):
+    """Render a shifted instant back in the shape the fixture used."""
+    if _DEMO_SYSLOG.fullmatch(original):
+        return moment.strftime("%b %d %H:%M:%S")
+
+    if _DEMO_MACOS.fullmatch(original):
+        return moment.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+
+    if original.endswith("Z"):
+        return moment.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    return moment.isoformat()
+
+
+def _render_demo_lines(scenario):
+    """Move a scenario's fixture lines onto the current date and time."""
+    tz = _demo_timezone(scenario.get("source_timezone", "Asia/Kolkata"))
+    lines = scenario["lines"]
+    parsed = [_demo_fixture_instants(line, tz) for line in lines]
+    instants = [moment for found in parsed for _, moment in found]
+
+    if not instants:
+        return list(lines)
+
+    # Whole seconds, so nothing renders a moment ahead of the receipt time.
+    anchor = datetime.now(timezone.utc).replace(microsecond=0)
+    shift = anchor - max(instants)
+
+    rendered = []
+
+    for line, found in zip(lines, parsed):
+        # Right to left, so each replacement leaves earlier offsets valid.
+        for match, moment in reversed(found):
+            # Shift as an absolute instant: adding to a zone-aware datetime
+            # moves the wall clock instead, which drifts an hour across a DST
+            # boundary between the fixture's date and today.
+            moved = (moment.astimezone(timezone.utc) + shift).astimezone(moment.tzinfo)
+            line = (
+                line[:match.start()]
+                + _format_demo_timestamp(match.group(0), moved)
+                + line[match.end():]
+            )
+
+        if not found:
+            # A line whose timestamp is deliberately unparseable still needs a
+            # current date, or the parsing-gap demos look stale.
+            line = _DEMO_SYSLOG_DATE.sub(
+                anchor.astimezone(tz).strftime("%b %d"), line, count=1
+            )
+
+        rendered.append(line)
+
+    return rendered
+
 
 class DemoIngestRequest(BaseModel):
     scenario: str
@@ -428,7 +531,8 @@ class DemoIngestRequest(BaseModel):
 def demo_scenarios():
     return {"items": [
         {"id": key, "label": value["label"], "device_id": "demo-device-01",
-         "log_type": value["log_type"], "source_timezone": value.get("source_timezone", "Asia/Kolkata"), "lines": value["lines"]}
+         "log_type": value["log_type"], "source_timezone": value.get("source_timezone", "Asia/Kolkata"),
+         "lines": _render_demo_lines(value)}
         for key, value in DEMO_SCENARIOS.items()
     ]}
 
@@ -450,7 +554,7 @@ def demo_ingest(request: Request, selection: DemoIngestRequest):
         "batch_id": str(uuid4()),
         "log_type": scenario["log_type"],
         "source_timezone": scenario.get("source_timezone", "Asia/Kolkata"),
-        "lines": scenario["lines"],
+        "lines": _render_demo_lines(scenario),
     }, ensure_ascii=False).encode("utf-8")
     payload = LogBatch.model_validate_json(payload_bytes)
     stored = _store_log_batch(payload, payload_bytes, owner_user_id=user["id"])
