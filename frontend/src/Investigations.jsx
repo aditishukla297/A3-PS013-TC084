@@ -7,7 +7,10 @@ import './styles/TracepointInteractionPolish.css';
 const API = '/api/v1/investigations';
 const stamp = v => v ? new Date(v).toLocaleString() : '—';
 const eventLabel = e => `${e.event_type || e.type || 'Event'} · ${e.device_id || e.hostname || 'Unknown device'} · ${e.username || 'Unknown user'} · ${stamp(e.timestamp || e.event_timestamp || e.received_at)}`;
-const eventRef = e => JSON.stringify({ device_id: e.device_id || '', batch_id: e.batch_id || '', timestamp: e.timestamp || e.event_timestamp || e.received_at || '', event_type: e.event_type || e.type || '', username: e.username || '', message: String(e.message || e.raw_line || '').slice(0, 100) });
+// The backend rebuilds this same object from its own copy of the event and
+// rejects a link unless the two match exactly, so the fallbacks here have to
+// stay in step with validate_event_reference in backend/app/investigations.py.
+const eventRef = e => JSON.stringify({ device_id: e.device_id || '', batch_id: e.batch_id || '', timestamp: e.timestamp || e.event_timestamp || e.received_at || '', event_type: e.event_type || e.type || '', username: e.username || '', message: String(e.message || e.raw_line || e.raw_log || '').slice(0, 100) });
 
 async function request(path, options = {}) {
   const response = await fetch(path, {
