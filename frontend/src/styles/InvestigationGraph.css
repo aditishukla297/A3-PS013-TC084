@@ -392,3 +392,19 @@
 .tp-app[data-theme="dark"] .tp-graph-root .tp-graph-gaps button small {
   color: #c2ccdc !important;
 }
+
+/* TRACEPOINT_GRAPH_CONNECTOR_RESTORE */
+.tp-graph-sequence .tp-graph-edge::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 3px;
+  min-width: 35px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #d67e47, #5988c2);
+  box-shadow: 0 0 5px #5988c255;
+}
+.tp-graph-sequence .tp-graph-edge {
+  width: 100%;
+  min-width: 0;
+}
